@@ -101,9 +101,10 @@ ClusterReorder <- c(1,3,5,4,2)
 ## CompHmapCNV_RmvByGiniMeanLowHighState_LowSt_Chr1only_01_213_143839A_389cells_RordClone.pdf
 ```
 
-![image](https://github.com/user-attachments/assets/f4a460ef-1734-4eab-9091-87fee95e35a1)
+![image](https://github.com/user-attachments/assets/58a54abc-0a12-4286-8daf-29e81d571d89)
 
-![image](https://github.com/user-attachments/assets/3da20a3c-9111-4b54-929c-46751fe6e0a2)
+![image](https://github.com/user-attachments/assets/a71c086e-d38a-48ee-b328-c0ce6437f9b1)
+
 
 ## Step5. Heatmap for chromosome 1 pericentromeric region
 
