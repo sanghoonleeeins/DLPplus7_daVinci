@@ -17,7 +17,7 @@ knitr::opts_chunk$set(echo = TRUE)
 
 We performed single cell sequencing of genomic DNA derived from 2,521 cells isolated from patients (n=5) with newly diagnosed multiple myeloma (NDMM) associated with copy number gain of chromosome 1q. The data highlights parallel evolution focused on copy number abnormalities of chromosome 1 as a being a key driver mechanism underlying disease evolution and progression to multiple myeloma (MM).
 
-DLP+7_daVinch is a R package to analyze SCNAs identified through single-cell whole genome sequencing (scWGS) with HMMcopy and generate hierarchical clustering heatmaps, ploidy plots, and phylogenetic tree. 
+DLP+7_daVinch is a R package to analyze SCNAs identified through single-cell whole genome sequencing (scWGS) with HMMcopy and generate clustering heatmaps, ploidy plots, and phylogenetic tree. 
 
 ## B. Install R package
 
@@ -49,9 +49,9 @@ dim(HMMcopy_AfterRmvCell_WithoutNABinRegion)  #  656 5228
 ## - "HMMcopy_StateIdeal_RmvArtifactCNV_ByMeanGini_01_235_143921A.rds" 
 ```
 
-## Step2. Run PCA and Kmean.  Make a hierarchical clustering heatmap for all chromosomes.  - This heatmap still includes artifact or low quality cells of clusters.  
+## Step2. Run PCA and Kmean.  Make a clustering heatmap for all chromosomes.  - This heatmap still includes artifact or low quality cells of clusters.  
       Give 4 or 5 KmeanClusterSize and see the clusters first. You can choose which cluster to remove and how to order clusters. 
-      This step is just to see the hierarchcial clustering with artifict cells.  But, this step is required to make ploidy plot input. 
+      This step is just to see the clustering with artifict cells.  But, this step is required to make ploidy plot input. 
 
 ```{PCA and Kmean cluatering}
 Processed_HMMcopyStateData <- readRDS(paste0(VignetteDir , "HMMcopy_StateIdeal_RmvCellByGiniMeanLowHighState_NoBinRegionAnnot_01_206_143839A.rds"))
@@ -73,13 +73,13 @@ PCAKmeanClustering(Processed_HMMcopyStateData,  MySampleID=MySampleID, KmeanClus
 
 ```{Remove normal cells and Reorder Cluster}
 ## Patient #3, 01_206_143839A
-HierarchialClusterInfoFile <- paste0(VignetteDir, "RowSplitHeatmapDraw_WithoutArtifactLowHighState_AllChr_01_206_143839A_5clu.rds")
+PCAKmeanClusterInfoFile <- paste0(VignetteDir, "RowSplitHeatmapDraw_WithoutArtifactLowHighState_AllChr_01_206_143839A_5clu.rds")
 CNVStateData_AfterRmvHighGiniMeanFile <- paste0(VignetteDir, "HMMcopy_StateIdeal_RmvCellByGiniMeanLowHighState_Kmean_01_206_143839A.rds")
 MySampleID <- "01_206_143839A"
 ClusterNumbToRmv="group2"
 ClusterReorder <- c("group4","group5","group1","group3")
 
-RemoveNormalClusterReorderHeatmap(HierarchialClusterInfoFile, CNVStateData_AfterRmvHighGiniMeanFile,MySampleID,ClusterNumbToRmv, ClusterReorder)
+RemoveNormalClusterReorderHeatmap(PCAKmeanClusterInfoFile, CNVStateData_AfterRmvHighGiniMeanFile,MySampleID,ClusterNumbToRmv, ClusterReorder)
 
 ## It will generate
 # "HMMcopy_StateIdeal_AfterRmvArtifactCell_RmvReorderCluster_01_206_143839A.rds"
@@ -95,13 +95,13 @@ RemoveNormalClusterReorderHeatmap(HierarchialClusterInfoFile, CNVStateData_After
 
 ```{xtract clone number for each cell}
 ## 3rd patients, 01_206_143839A
-HierarchialClusterInfoFile <- paste0(VignetteDir, "RowSplitHeatmapDraw_WithoutArtifactLowHighState_AllChr_01_206_143839A_6clu.rds")
+PCAKmeanClusterInfoFile <- paste0(VignetteDir, "RowSplitHeatmapDraw_WithoutArtifactLowHighState_AllChr_01_206_143839A_6clu.rds")
 CNVStateData_AfterRmvHighGiniMeanFile <- paste0(VignetteDir, "HMMcopy_StateIdeal_RmvCellByGiniMean_01_206_143839A_LowHighState1.rds")
 MySampleID <- "01_206_143839A"
 ClusterNumbToRmv=6
 ClusterReorder <- c(1,3,5,4,2)
 
-RemoveNormalClusterReorder_CloneNumb(HierarchialClusterInfoFile, CNVStateData_AfterRmvHighGiniMeanFile, MySampleID,ClusterNumbToRmv, ClusterReorder) 
+RemoveNormalClusterReorder_CloneNumb(PCAKmeanClusterInfoFile, CNVStateData_AfterRmvHighGiniMeanFile, MySampleID,ClusterNumbToRmv, ClusterReorder) 
 
 ## This stepp will generate
 ## HMMcopy_StateIdeal_AfterRmvArtifactCell_RmvReorderCluster_MySampleID.rds
@@ -118,12 +118,12 @@ RemoveNormalClusterReorder_CloneNumb(HierarchialClusterInfoFile, CNVStateData_Af
 
 ```{ }
 ## Pt. #3 01_206_143839A
-HierarchialClusterInfoFile <- paste0(VignetteDir, "RowSplitHeatmapDraw_WithoutArtifactLowHighState_AllChr_01_206_143839A_5clu.rds")
+PCAKmeanClusterInfoFile <- paste0(VignetteDir, "RowSplitHeatmapDraw_WithoutArtifactLowHighState_AllChr_01_206_143839A_5clu.rds")
 HMMcopy_AfterRmvCell_WithoutNABinRegionFile <- paste0(VignetteDir, "HMMcopy_StateIdeal_AfterRmvArtifactCell_RmvReorderCluster_01_206_143839A.rds")
 HMMcopy_StateIdeal_RmvArtifactCNV_ByMeanGiniStateLowHighFile <- paste0(VignetteDir, "HMMcopy_StateIdeal_RmvCellByGiniMean_01_206_143839A_LowHighState1.rds") # This file is from Step1 output.It has Bin Region
 MySampleID <- "01_206_143839A" 
 
-Chr1Centromere_Heatmap(HierarchialClusterInfoFile, HMMcopy_AfterRmvCell_WithoutNABinRegionFile, HMMcopy_StateIdeal_RmvArtifactCNV_ByMeanGiniStateLowHighFile, MySampleID)
+Chr1Centromere_Heatmap(PCAKmeanClusterInfoFile, HMMcopy_AfterRmvCell_WithoutNABinRegionFile, HMMcopy_StateIdeal_RmvArtifactCNV_ByMeanGiniStateLowHighFile, MySampleID)
 
 ## This step will generate "CompHeatmap_Chr1CentromereRegion_01_206_143839A_OOOcells.pdf"
 
@@ -138,12 +138,12 @@ library(CopyNumberPlots)
 
 ### Patient #3 - 01_206_143839A
 CNVSegmentFile=paste0(DLPpHMMCopyOutDir,"/01_206_143839A/hmmcopy_segments.csv.gz");
-HierarchialClusterInfoAfRmvClusterFile=paste0(VignetteDir, "/RowSplitHeatmapDraw_WithoutArtifactLowHighState_AllChr_01_206_143839A_5clu.rds");
+PCAKmeanClusterInfoAfRmvClusterFile=paste0(VignetteDir, "/RowSplitHeatmapDraw_WithoutArtifactLowHighState_AllChr_01_206_143839A_5clu.rds");
 CNVStateData_AfterRmvHighGiniMeanFile=paste0(VignetteDir, "/HMMcopy_StateIdeal_AfterRmvArtifactCell_RmvReorderCluster_01_206_143839A.rds" );   #"/HMMcopy_StateIdeal_RmvCellByGiniMean_WithoutBinRegionAnnot_01_206_143839A.rds");
 ClusterNumbToRmv=NULL;  ClusterNumbToPick=NULL; MySampleID="01_206_143839A"
 
-Karyoplote_BySegment(CNVSegmentFile=CNVSegmentFile,# HierarchialClusterInfoFile=HierarchialClusterInfoFile,
-                     HierarchialClusterInfoAfRmvClusterFile=HierarchialClusterInfoAfRmvClusterFile,HierarchialClusterInfoAfRmvClusterChr1File=NULL,
+Karyoplote_BySegment(CNVSegmentFile=CNVSegmentFile,
+                     PCAKmeanClusterInfoAfRmvClusterFile=PCAKmeanClusterInfoAfRmvClusterFile,PCAKmeanClusterInfoAfRmvClusterChr1File=NULL,
                      CNVStateData_AfterRmvHighGiniMeanFile,
                      CNVStateData_AfterRmvHighGiniMeanClusterFile=NULL,
                      ClusterNumbToRmv,  ClusterNumbToPick, ClusterNumbToPick_InChr1=ClusterNumbToPick_InChr1,MySampleID=MySampleID )
