@@ -397,8 +397,8 @@ PCAKmeanClustering <- function(Processed_HMMcopyStateData,  MySampleID="MySample
 #' @return save RowSplitHeatmapDraw_WithArtifact rds file
 #' @export
 #'
-#' @examples HierarchialClusteringHeatmap(Processed_HMMcopyStateData=HMMcopy_AfterRmvCell_WithoutNABinRegion, MySampleID="01_206_143839A", AllCell="WithoutArtifact", ChromosomeToSubset="All",ClusterSize=9)
-HierarchialClusteringHeatmap <- function(Processed_HMMcopyStateData=HMMcopy_StateIdeal_RmvArtifactCNV_WithoutBinRegion,  MySampleID="MySampleID",
+#' @examples PCAKmeanClusteringHeatmap(Processed_HMMcopyStateData=HMMcopy_AfterRmvCell_WithoutNABinRegion, MySampleID="01_206_143839A", AllCell="WithoutArtifact", ChromosomeToSubset="All",ClusterSize=9)
+PCAKmeanClusteringHeatmap <- function(Processed_HMMcopyStateData=HMMcopy_StateIdeal_RmvArtifactCNV_WithoutBinRegion,  MySampleID="MySampleID",
                                          AllCell="WithArtifact", ChromosomeToSubset="All", ClusterSize=9) {  # "All", "chr01", "chr02"
   ## Processed_HMMcopyStateData=HMMcopy_StateIdeal_RmvArtifactCNV_Chr1Only;ChromosomeToSubset=FALSE; SampleID="01_040_143929A"; ClusterSize=9;
   col_fun_CNV = circlize::colorRamp2(c(0:10),
@@ -450,7 +450,7 @@ HierarchialClusteringHeatmap <- function(Processed_HMMcopyStateData=HMMcopy_Stat
 #' Title
 #'
 #' @param HMMcopy_StateIdeal_AfterRmvArtifactCell_ColNameProc  Output file of Step3. Input for Step4.
-#' @param HierarchialClusterInfoFile   cluster numbers for each cell
+#' @param PCAKmeanClusterInfoFile   cluster numbers for each cell
 #' @param ClusterNumbToRmv  cluster number that I want to remove
 #' @param ClusterReorder    Cluster reorder number
 #' @param ClusterNumbToPick  If I want to pick a couple of clusters.
@@ -459,13 +459,13 @@ HierarchialClusteringHeatmap <- function(Processed_HMMcopyStateData=HMMcopy_Stat
 #' @return HMMcopy_StateIdeal_AfterRmvArtifactCell_ColNameProc
 #' @export
 #'
-#' @examples RemoveReorderCell_ByClusterNumb(HMMcopy_StateIdeal_AfterRmvArtifactCell_ColNameProc, HierarchialClusterInfoFile, ClusterNumbToRmv=NULL,ClusterReorder=NULL, ClusterNumbToPick=NULL)
-RemoveReorderCell_ByClusterNumb <- function(HMMcopy_StateIdeal_AfterRmvArtifactCell_ColNameProc, HierarchialClusterInfoFile, ClusterNumbToRmv=NULL,
+#' @examples RemoveReorderCell_ByClusterNumb(HMMcopy_StateIdeal_AfterRmvArtifactCell_ColNameProc, PCAKmeanClusterInfoFile, ClusterNumbToRmv=NULL,ClusterReorder=NULL, ClusterNumbToPick=NULL)
+RemoveReorderCell_ByClusterNumb <- function(HMMcopy_StateIdeal_AfterRmvArtifactCell_ColNameProc, PCAKmeanClusterInfoFile, ClusterNumbToRmv=NULL,
                                             ClusterReorder=NULL, ClusterNumbToPick=NULL, MySampleID, ForPloidyPlot=FALSE) {
     #### Finding cell IDs by cluster number.
-    # RowSplitHeatmapDraw_NoRmvCell <- readRDS(HierarchialClusterInfoFile)
+    # RowSplitHeatmapDraw_NoRmvCell <- readRDS(PCAKmeanClusterInfoFile)
     # RowIndexExtract <-ComplexHeatmap::row_order(RowSplitHeatmapDraw_NoRmvCell); sum(length(unlist(RowIndexExtract)))  # "6" "7" "5" "3" "4" "1" "2"
-    RowIndexExtract <- readRDS(HierarchialClusterInfoFile)
+    RowIndexExtract <- readRDS(PCAKmeanClusterInfoFile)
     if (!ForPloidyPlot) {
         CellNumberEachCluster <- unlist(lapply(RowIndexExtract, length)); print(CellNumberEachCluster)
         fwrite(data.frame(CellNumberEachCluster), paste0("CellNumberEachCluster_", MySampleID,"_",sum(CellNumberEachCluster) ,  "cells.txt"), col.names=TRUE, row.names=TRUE, sep="\t", quote=FALSE)
@@ -523,18 +523,18 @@ RemoveReorderCell_ByClusterNumb <- function(HMMcopy_StateIdeal_AfterRmvArtifactC
 
 #' Title
 #'
-#' @param HierarchialClusterInfoFile    cluster number information of each cell
+#' @param PCAKmeanClusterInfoFile    cluster number information of each cell
 #' @param ClusterReorder    cluster reorder numbers
 #'
 #' @return IndexCell_ReorderClusterAll
 #' @export
 #'
-#' @examples CountCell_EachCluster(HierarchialClusterInfoFile="RowSplitHeatmapDraw_WithoutArtifactLowHighState7_AllChr_01_213_143839A.rds", ClusterReorder=c(5,3,4,7,6))
-CountCell_EachCluster<- function(HierarchialClusterInfoFile, ClusterReorder) {
+#' @examples CountCell_EachCluster(PCAKmeanClusterInfoFile="RowSplitHeatmapDraw_WithoutArtifactLowHighState7_AllChr_01_213_143839A.rds", ClusterReorder=c(5,3,4,7,6))
+CountCell_EachCluster<- function(PCAKmeanClusterInfoFile, ClusterReorder) {
       #### Finding cell IDs by cluster number.
-      # RowSplitHeatmapDraw_NoRmvCell <- readRDS(HierarchialClusterInfoFile)
+      # RowSplitHeatmapDraw_NoRmvCell <- readRDS(PCAKmeanClusterInfoFile)
       # RowIndexExtract <-ComplexHeatmap::row_order(RowSplitHeatmapDraw_NoRmvCell); sum(length(unlist(RowIndexExtract)))  # "6" "7" "5" "3" "4" "1" "2"
-      RowIndexExtract <- readRDS(HierarchialClusterInfoFile)
+      RowIndexExtract <- readRDS(PCAKmeanClusterInfoFile)
 
 
       IndexCell_ReorderClusterAll <- c();
@@ -551,7 +551,7 @@ CountCell_EachCluster<- function(HierarchialClusterInfoFile, ClusterReorder) {
 
 #' Title
 #'
-#' @param HierarchialClusterInfoFile    cluster numbers of each cell
+#' @param PCAKmeanClusterInfoFile    cluster numbers of each cell
 #' @param CNVStateData_AfterRmvHighGiniMeanFile   CNV data after removing cells of high Gini score and high mean.
 #' @param MySampleID    Manually typed in
 #' @param ClusterNumbToRmv    cluster number to remove
@@ -560,8 +560,8 @@ CountCell_EachCluster<- function(HierarchialClusterInfoFile, ClusterReorder) {
 #' @return make CompHmapCNV_RmvByGiniMeanLowHighState_LowSt_Chr1only_ pdf file
 #' @export
 #'
-#' @examples RemoveNormalClusterReorderHeatmap(HierarchialClusterInfoFile="RowSplitHeatmapDraw_WithoutArtifactLowHighState6_AllChr_01_213_143839A.rds",CNVStateData_AfterRmvHighGiniMeanFile="HMMcopy_StateIdeal_RmvCellByGiniMean_WithoutBinRegion_01_213_143939A.rds", MySampleID="01_213_143839A",ClusterNumbToRmv=c(1,2), ClusterReorder=c(3,6,4,5)
-RemoveNormalClusterReorderHeatmap <- function (HierarchialClusterInfoFile="RowSplitHeatmapDraw_WithoutArtifactLowHighState6_AllChr_01_213_143839A.rds",
+#' @examples RemoveNormalClusterReorderHeatmap(PCAKmeanClusterInfoFile="RowSplitHeatmapDraw_WithoutArtifactLowHighState6_AllChr_01_213_143839A.rds",CNVStateData_AfterRmvHighGiniMeanFile="HMMcopy_StateIdeal_RmvCellByGiniMean_WithoutBinRegion_01_213_143939A.rds", MySampleID="01_213_143839A",ClusterNumbToRmv=c(1,2), ClusterReorder=c(3,6,4,5)
+RemoveNormalClusterReorderHeatmap <- function (PCAKmeanClusterInfoFile="RowSplitHeatmapDraw_WithoutArtifactLowHighState6_AllChr_01_213_143839A.rds",
                                       CNVStateData_AfterRmvHighGiniMeanFile="HMMcopy_StateIdeal_RmvCellByGiniMean_WithoutBinRegion_01_213_143939A.rds",
                                        MySampleID,ClusterNumbToRmv=c(1,2), ClusterReorder=c(3,6,4,5)) {
       # HMMcopy_StateIdeal_NoRmvArtifactCell_ColNameProc <- readRDS(HMMcopyFile_BeforeRmvArtifact) ;
@@ -576,7 +576,7 @@ RemoveNormalClusterReorderHeatmap <- function (HierarchialClusterInfoFile="RowSp
 
       ########## ++++++++++ Remove artifacts by cluster number of cells, and reorder cells by cluster number
       HMMcopy_StateIdeal_AfterRmvArtifactCell_RmvReorderCluster <-  RemoveReorderCell_ByClusterNumb(HMMcopy_StateIdeal_AfterRmvArtifactCell_ColNameProc,
-                                     HierarchialClusterInfoFile, ClusterNumbToRmv, ClusterReorder, ClusterNumbToPick=NULL, MySampleID, ForPloidyPlot=FALSE)
+                                     PCAKmeanClusterInfoFile, ClusterNumbToRmv, ClusterReorder, ClusterNumbToPick=NULL, MySampleID, ForPloidyPlot=FALSE)
       dim(HMMcopy_StateIdeal_AfterRmvArtifactCell_RmvReorderCluster) # Pt#3, 01-206, 651 4922;  Pt#8 09_025, 497 5105   # Pt9 BM_CD138, 475 5051
       saveRDS(HMMcopy_StateIdeal_AfterRmvArtifactCell_RmvReorderCluster,
               file=paste0("HMMcopy_StateIdeal_AfterRmvArtifactCell_RmvReorderCluster_",MySampleID,".rds"))
@@ -591,7 +591,7 @@ RemoveNormalClusterReorderHeatmap <- function (HierarchialClusterInfoFile="RowSp
       EndChrYPositionPercent <- (Position_chrStart[22]-1)/ncol(HMMcopy_StateIdeal_AfterRmvArtifactCell_RmvReorderCluster); print(EndChrYPositionPercent)
 
       ##### Count the number of cells in each cluster.
-      NumberCell_EachCluster <- CountCell_EachCluster(HierarchialClusterInfoFile, ClusterReorder) # [1] 118  31 135  92  11
+      NumberCell_EachCluster <- CountCell_EachCluster(PCAKmeanClusterInfoFile, ClusterReorder) # [1] 118  31 135  92  11
       Numb_Cell <- sum(NumberCell_EachCluster)
 
       ## Split cells in hierarchical clustering
@@ -674,7 +674,7 @@ RemoveNormalClusterReorderHeatmap <- function (HierarchialClusterInfoFile="RowSp
 
 #' Title Chr1Centromere_Heatmap
 #'
-#' @param HierarchialClusterInfoFile   HMMcopy data after remove artifact cells
+#' @param PCAKmeanClusterInfoFile   HMMcopy data after remove artifact cells
 #' @param HMMcopy_StateIdeal_RmvArtifactCNV_ByMeanGiniStateLowHighFile    HMMcopy data after remove artifact cells and after reordered
 #' @param MySampleID   Manually typed in.
 #' @param ClusterNumbToRmv Remove n oise clusters
@@ -683,11 +683,11 @@ RemoveNormalClusterReorderHeatmap <- function (HierarchialClusterInfoFile="RowSp
 #' @return CompHeatmap_Chr1CentromereRegion_ pdf file
 #' @export
 #'
-#' @examples Chr1Centromere_Heatmap(HierarchialClusterInfoFile="HMMcopy_StateIdeal_RmvArtifactCNV_ByMeanGini_01_213_143839A.rds", HMMcopy_StateIdeal_RmvArtifactCNV_ByMeanGiniStateLowHighFile="HMMcopy_StateIdeal_AfterRmvArtifactCell_RmvReorderCluster_01_213_143839A.rds", MySampleID="01_213_143839A")
-Chr1Centromere_Heatmap <- function (HierarchialClusterInfoFile, HMMcopy_AfterRmvCell_WithoutNABinRegionFile, HMMcopy_StateIdeal_RmvArtifactCNV_ByMeanGiniStateLowHighFile, MySampleID) {
+#' @examples Chr1Centromere_Heatmap(PCAKmeanClusterInfoFile="HMMcopy_StateIdeal_RmvArtifactCNV_ByMeanGini_01_213_143839A.rds", HMMcopy_StateIdeal_RmvArtifactCNV_ByMeanGiniStateLowHighFile="HMMcopy_StateIdeal_AfterRmvArtifactCell_RmvReorderCluster_01_213_143839A.rds", MySampleID="01_213_143839A")
+Chr1Centromere_Heatmap <- function (PCAKmeanClusterInfoFile, HMMcopy_AfterRmvCell_WithoutNABinRegionFile, HMMcopy_StateIdeal_RmvArtifactCNV_ByMeanGiniStateLowHighFile, MySampleID) {
 
-      HierarchialClusterInfo <- readRDS(HierarchialClusterInfoFile)
-      class(HierarchialClusterInfo) #list
+      PCAKmeanClusterInfo <- readRDS(PCAKmeanClusterInfoFile)
+      class(PCAKmeanClusterInfo) #list
 
       HMMcopy_StateIdeal_RmvArtifactCNV_ByMeanGini_StateLowHighReorder <- readRDS(HMMcopy_StateIdeal_RmvArtifactCNV_ByMeanGiniStateLowHighFile)
       HMMcopy_RmvArtifactCNV_ByMeanGini_StateLowHighReorder_CellIDColumn <- HMMcopy_StateIdeal_RmvArtifactCNV_ByMeanGini_StateLowHighReorder %>% tibble::rownames_to_column("CellID")
@@ -1069,9 +1069,9 @@ CNVStatePloidyLine <- function (CNVSeg_StateIdealSelect_RmvByGiniMeanState_RmvBy
 #' Title
 #'
 #' @param CNVSegmentFile  original CNV segment file
-#' @param HierarchialClusterInfoFile cluster number of cells
-#' @param HierarchialClusterInfoAfRmvClusterFile  cluster number of cells after removing outliers
-#' @param HierarchialClusterInfoAfRmvClusterChr1File  cluster number of cells in chr 1
+#' @param PCAKmeanClusterInfoFile cluster number of cells
+#' @param PCAKmeanClusterInfoAfRmvClusterFile  cluster number of cells after removing outliers
+#' @param PCAKmeanClusterInfoAfRmvClusterChr1File  cluster number of cells in chr 1
 #' @param CNVStateData_AfterRmvHighGiniMeanFile   CNV state data after removing cells of high gini and high mean
 #' @param CNVStateData_AfterRmvHighGiniMeanClusterFile  CNV state data after removing cells of high gini and high mean, and specific clusters
 #' @param ClusterNumbToRmv  cluster number to remove, NULL
@@ -1082,11 +1082,11 @@ CNVStatePloidyLine <- function (CNVSeg_StateIdealSelect_RmvByGiniMeanState_RmvBy
 #' @returns NULL
 #' @export
 #'
-#' @examples   Karyoplote_BySegment(CNVSegmentFile,HierarchialClusterInfoFile,HierarchialClusterInfoAfRmvClusterFile, HierarchialClusterInfoAfRmvClusterChr1File,CNVStateData_AfterRmvHighGiniMeanFile,CNVStateData_AfterRmvHighGiniMeanClusterFile, ClusterNumbToRmv,  ClusterNumbToPick,ClusterNumbToPick_InChr1, MySampleID)
+#' @examples   Karyoplote_BySegment(CNVSegmentFile,PCAKmeanClusterInfoFile,PCAKmeanClusterInfoAfRmvClusterFile, PCAKmeanClusterInfoAfRmvClusterChr1File,CNVStateData_AfterRmvHighGiniMeanFile,CNVStateData_AfterRmvHighGiniMeanClusterFile, ClusterNumbToRmv,  ClusterNumbToPick,ClusterNumbToPick_InChr1, MySampleID)
 Karyoplote_BySegment <- function(CNVSegmentFile="/Users/lees130/Library/CloudStorage/OneDrive-NYULangoneHealth/N07_DLPplus_scWGS/04_DLPplus_1qGain_8ptData/01-213_143839A/hmmcopy_segments.csv.gz",
-                                 # HierarchialClusterInfoFile="/Users/lees130/Library/CloudStorage/OneDrive-NYULangoneHealth/N07_DLPplus_scWGS/09b_HMMCopyHierarchicalCluster_Rpackage/02_OutHMMcopyClusteringHeatmap_RmvBinCellByGiniMean/RowSplitHeatmapDraw_WithoutArtifact_AllChr_01_213_143839A.rds",
-                                 HierarchialClusterInfoAfRmvClusterFile="/Users/lees130/Library/CloudStorage/OneDrive-NYULangoneHealth/N07_DLPplus_scWGS/09b_HMMCopyHierarchicalCluster_Rpackage/02_OutHMMcopyClusteringHeatmap_RmvBinCellByGiniMean/RowSplitHeatmapDraw_WithoutArtifactByCluster_AllChr_01_213_143839A.rds",
-                                 HierarchialClusterInfoAfRmvClusterChr1File=NULL,
+                                 # PCAKmeanClusterInfoFile="/Users/lees130/Library/CloudStorage/OneDrive-NYULangoneHealth/N07_DLPplus_scWGS/09b_HMMCopyHierarchicalCluster_Rpackage/02_OutHMMcopyClusteringHeatmap_RmvBinCellByGiniMean/RowSplitHeatmapDraw_WithoutArtifact_AllChr_01_213_143839A.rds",
+                                 PCAKmeanClusterInfoAfRmvClusterFile="/Users/lees130/Library/CloudStorage/OneDrive-NYULangoneHealth/N07_DLPplus_scWGS/09b_HMMCopyHierarchicalCluster_Rpackage/02_OutHMMcopyClusteringHeatmap_RmvBinCellByGiniMean/RowSplitHeatmapDraw_WithoutArtifactByCluster_AllChr_01_213_143839A.rds",
+                                 PCAKmeanClusterInfoAfRmvClusterChr1File=NULL,
                                  CNVStateData_AfterRmvHighGiniMeanFile="/Users/lees130/Library/CloudStorage/OneDrive-NYULangoneHealth/N07_DLPplus_scWGS/09b_HMMCopyHierarchicalCluster_Rpackage/02_OutHMMcopyClusteringHeatmap_RmvBinCellByGiniMean/HMMcopy_StateIdeal_RmvCellByGiniMean_WithoutBinRegion_01_213_143839A.rds",
                                  CNVStateData_AfterRmvHighGiniMeanClusterFile=NULL,
                                  ClusterNumbToRmv=c(7,8,9),  ClusterNumbToPick=c(6,8),ClusterNumbToPick_InChr1=c(1,2),  MySampleID="01_213_143839A") {
@@ -1194,12 +1194,12 @@ Karyoplote_BySegment <- function(CNVSegmentFile="/Users/lees130/Library/CloudSto
     ##########################################################################################################################
     ## remove Cells by Hierarchical cluster numbers
     #### +++++++++++++++++ #### +++++++++++++++++ #### +++++++++++++++++ #### +++++++++++++++++ #### +++++++++++++++++ #### +++++++++++++++++
-    # RowSplitHeatmapDraw_NoRmvCell <- readRDS(HierarchialClusterInfoFile)
+    # RowSplitHeatmapDraw_NoRmvCell <- readRDS(PCAKmeanClusterInfoFile)
     # RowIndexExtract <-ComplexHeatmap::row_order(RowSplitHeatmapDraw_NoRmvCell); sum(length(unlist(RowIndexExtract)))  # 637
 
     ### Find Cell IDs after remove artifacts by cluster number of cells.
     # CNVSeg_StateIdeal_RmvCluster6789 <-  RemoveReorderCell_ByClusterNumb(HMMcopy_StateIdeal_AfterRmvArtifactCell_ColNameProc=CNVSeg_StateIdeal_AfterRmvArtifactCell_ColNameProc,
-    #                                                                      HierarchialClusterInfoFile, ClusterNumbToRmv, ClusterNumbToPick,ClusterReorder=NULL,MySampleID,ForPloidyPlot=TRUE)
+    #                                                                      PCAKmeanClusterInfoFile, ClusterNumbToRmv, ClusterNumbToPick,ClusterReorder=NULL,MySampleID,ForPloidyPlot=TRUE)
     # dim(CNVSeg_StateIdeal_RmvCluster6789) # 553 5259.   ##### Problem is here.
     CNVSeg_StateIdeal_RmvCluster6789 <- CNVSeg_StateIdeal_AfterRmvArtifactCell_ColNameProc; dim(CNVSeg_StateIdeal_RmvCluster6789)
 
@@ -1260,7 +1260,7 @@ Karyoplote_BySegment <- function(CNVSegmentFile="/Users/lees130/Library/CloudSto
     ##########################################################################################################################
     ### Find Cell IDs of my interestcluster number of cells.
     CNVSeg_StateIdeal_PickCluster79 <-  RemoveReorderCell_ByClusterNumb(HMMcopy_StateIdeal_AfterRmvArtifactCell_ColNameProc= CNVSeg_StateIdeal_RmvCluster6789,
-                                                                 HierarchialClusterInfoFile=HierarchialClusterInfoAfRmvClusterFile, ClusterNumbToRmv=NULL,  ClusterNumbToPick=NULL,ClusterReorder=NULL,MySampleID,ForPloidyPlot=TRUE)
+                                                                 PCAKmeanClusterInfoFile=PCAKmeanClusterInfoAfRmvClusterFile, ClusterNumbToRmv=NULL,  ClusterNumbToPick=NULL,ClusterReorder=NULL,MySampleID,ForPloidyPlot=TRUE)
     dim(CNVSeg_StateIdeal_PickCluster79) # 291  5359
 
     for (EachClusterNumber in ClusterNumbToPick) {
@@ -1309,11 +1309,11 @@ Karyoplote_BySegment <- function(CNVSegmentFile="/Users/lees130/Library/CloudSto
     #### +++++++++++++++++ #### +++++++++++++++++ #### +++++++++++++++++ #### +++++++++++++++++ #### +++++++++++++++++  #### +++++++++++++++++  #### +++++++++++++++++  #### +++++++++++++++++
     #### +++++++++++++++++ #### +++++++++++++++++ #### +++++++++++++++++ #### +++++++++++++++++ #### +++++++++++++++++  #### +++++++++++++++++  #### +++++++++++++++++  #### +++++++++++++++++
     #### Just chromosome 1 segments and make Karyoplot.  ###############
-    if(!is.null(HierarchialClusterInfoAfRmvClusterChr1File)) {
+    if(!is.null(PCAKmeanClusterInfoAfRmvClusterChr1File)) {
         CNVSeg_StateIdeal_RmvCluster6789_ReorderBy <- readRDS(CNVStateData_AfterRmvHighGiniMeanClusterFile); dim(CNVSeg_StateIdeal_RmvCluster6789_ReorderBy) # 587 426
 
         CNVSeg_StateIdeal_PickCluster79_Chr1 <-RemoveCell_ByClusterNumb(HMMcopy_StateIdeal_AfterRmvArtifactCell_ColNameProc=CNVSeg_StateIdeal_RmvCluster6789_ReorderBy,
-                                                                        HierarchialClusterInfoFile=HierarchialClusterInfoAfRmvClusterChr1File, ClusterNumbToRmv=NULL, ClusterNumbToPick=ClusterNumbToPick_InChr1)
+                                                                        PCAKmeanClusterInfoFile=PCAKmeanClusterInfoAfRmvClusterChr1File, ClusterNumbToRmv=NULL, ClusterNumbToPick=ClusterNumbToPick_InChr1)
         dim(CNVSeg_StateIdeal_PickCluster79_Chr1); CNVSeg_StateIdeal_PickCluster79_Chr1[1:2,1:5] # 587 426
 
         for (EachClusterNumber in ClusterNumbToPick_InChr1) {
@@ -1381,7 +1381,7 @@ Karyoplote_BySegment <- function(CNVSegmentFile="/Users/lees130/Library/CloudSto
 PhylogeneticTree <- function(df=TreeData, num_cells_in=NumbCellData, MySampleID=MySampleID)  {
       num_cells <- num_cells_in[which(num_cells_in$sample==MySampleID),][,!names(num_cells_in) %in% c("sample")]
 
-      colors = c("Normal" = "black", "Clone1" = "#7b0033", "Clone2"="#008EA0FF", "Clone3"="#8A4198FF", "Clone4"="#CFC44AFF", "Clone5"="#1A5354FF", "Clone6"="#CF4A5BFF", "Clone7"="#B87333",
+      colors = c("Normal" = "darkgrey", "Clone1" = "#7b0033", "Clone2"="#008EA0FF", "Clone3"="#8A4198FF", "Clone4"="#CFC44AFF", "Clone5"="#1A5354FF", "Clone6"="#CF4A5BFF", "Clone7"="#B87333",
                  "Clone8"="#660099FF","Clone9"="#003399FF", "Clone10"="#D60047FF",  "Clone11"="#9C964A", "Clone12"="#00D68FFF","Clone13"= "#0A47FFFF", "Clone14"="#5050FF99")
 
       sample <- MySampleID
@@ -1425,13 +1425,14 @@ PhylogeneticTree <- function(df=TreeData, num_cells_in=NumbCellData, MySampleID=
       gg_rot$data$x <- gg$data$y
       gg_rot$data$y <- -1 * gg$data$x #negate so the root is at the top
 
-      PtNumb <- paste0("Pt",LoopNumb)
+      # PtNumb <- paste0("Pt",LoopNumb)
+      PtNumb <- paste0("Pt_", MySampleID)
 
       message(glue("plotting {MySampleID}"))
       gg1 <- gg_rot + aes(linetype=I(lty)) +
         geom_point(aes(size=(counts*1.2))) + #slightly larger than points, acts as a border
         geom_point(aes(size=counts, color = factor(label))) + guides(color="none") + #just show legend for size nodes are labeled (don't need color legend)
-        scale_color_manual(values = man_cols, na.value = "black") + #color by labels added to num_cells so they're in order
+        scale_color_manual(values = man_cols, na.value = "darkgrey") + #color by labels added to num_cells so they're in order
         geom_text(aes(label=label), position = position_nudge(0)) +
         ggtitle(glue("{MySampleID} Clonal Evolution")) +
         scale_size_continuous(range=c(10,30), name="Number of Cells") #use this instead of scaling the counts data, range sets smallest/ largest sizes (default they were very small)
@@ -1443,7 +1444,4 @@ PhylogeneticTree <- function(df=TreeData, num_cells_in=NumbCellData, MySampleID=
       print(paste0("this s is done: ", MySampleID))
       return("PhylogeneticTree is done")
 }
-
-
-
 
