@@ -144,7 +144,8 @@ Karyoplote_BySegment(CNVSegmentFile=CNVSegmentFile,
 
 ## This step will generate "OutKaryoplote_AllCell_BeforeRmvHighGiniMean_BySegMedian_ByCluster_01_206_143839A_PloidyLineOOOc.pdf"
 ```
-![image](https://github.com/user-attachments/assets/91cd7c5e-a5f4-4b63-b834-f376feecce40)
+<img width="535" height="257" alt="image" src="https://github.com/user-attachments/assets/6a6aebac-4693-4cf2-a12a-f077afce5db8" />
+
 
 ## Step7. Subclone phylogenetic tree
 
@@ -166,7 +167,8 @@ PhylogeneticTree(df=TreeData, num_cells_in=NumbCellData, MySampleID=MySampleID)
 ## This step will generate "OutPhylogeneticTree_01_206.pdf"
 
 ```
-![image](https://github.com/user-attachments/assets/c1a676f5-0839-40b8-818b-8702d3bd141f)
+<img width="328" height="62" alt="image" src="https://github.com/user-attachments/assets/add7d3fa-d4c9-4618-b031-5b7d8d8f8f78" />
+
 
 
 contact: Sanghoon Lee, lees130@nyulangone.org
