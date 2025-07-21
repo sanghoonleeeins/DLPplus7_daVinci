@@ -1,7 +1,0 @@
-	CellNumberEachCluster
-6	53
-1	19
-5	59
-3	133
-4	415
-2	25
