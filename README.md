@@ -149,25 +149,36 @@ Karyoplote_BySegment(CNVSegmentFile=CNVSegmentFile,
 
 ## Step7. Subclone phylogenetic tree
 
-```{Phylogenetic tree}
+```{r phylogenetic tree}
+  library(igraph)
+  library(scales)
+  library(ggtree) ## bioconductor
+  library(ggrepel)
+  library(glue)
+  library(stringr)
+  library(cowplot)
+  library(ggtext)
+  library(data.table)
+  library(reshape2)
+  library(ggpubr)
+
 ## Pt3, 01_206  clone evolution
-TreeData <- data.frame("sample" = c("01_206","01_206","01_206","01_206","01_206"), #name of sample, useful to read in all samples at once if processing multiple
-                           "from" = c("x",   "Clone1", "x",      "Clone3","Clone4"), #parental Clone
-                           "to"= c("Clone1", "Clone2", "Clone3", "Clone4","Clone5"))  #child Clone
+TreeData <- data.frame("sample" = c("01_206","01_206","01_206"), #name of sample, useful to read in all samples at once if processing multiple
+                           "from" = c("x",   "Clone1", "Clone2_3" ), #parental Clones. 'x' is a virtual normal. 
+                           "to"= c("Clone1", "Clone2_3", "Clone4" ))  #child Clone
                            #"score" = c() #a metric of CNV burden 
 # Pt3 01_206 cell numbers 
-NumbCellData <- data.frame("sample" = c("01_206","01_206", "01_206", "01_206","01_206","01_206"), #name of sample, useful to read in all samples at once if processing multiple
-                                  "name" = c("x", "Clone1", "Clone2", "Clone3", "Clone4", "Clone5"), #Clone
-                                  "counts"= c(0,19, 133,59,415, 25)) #number of cells in Clone
+NumbCellData <- data.frame("sample" = c("01_206","01_206", "01_206", "01_206"), #name of sample, useful to read in all samples at once if processing multiple
+                                  "name" = c("x", "Clone1", "Clone2_3", "Clone4"), #Clone
+                                  "counts"= c(0, 16, 607, 28)) #number of cells in Clone
 MySampleID <- "01_206";
-
 ## Make Phylogenetic tree
 PhylogeneticTree(df=TreeData, num_cells_in=NumbCellData, MySampleID=MySampleID)
 
 ## This step will generate "OutPhylogeneticTree_01_206.pdf"
 
 ```
-<img width="328" height="62" alt="image" src="https://github.com/user-attachments/assets/add7d3fa-d4c9-4618-b031-5b7d8d8f8f78" />
+<img width="292" height="310" alt="image" src="https://github.com/user-attachments/assets/15577b5f-248b-46d9-a800-7a342eacb4f8" />
 
 
 
