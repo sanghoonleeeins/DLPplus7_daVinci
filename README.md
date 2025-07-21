@@ -66,7 +66,7 @@ PCAKmeanClustering(Processed_HMMcopyStateData,  MySampleID=MySampleID, KmeanClus
 
 
 ```
-<img width="696" height="685" alt="image" src="https://github.com/user-attachments/assets/abf74d4d-2526-47e6-88dd-14b102b1d6f4" />
+<img width="457" height="457" alt="image" src="https://github.com/user-attachments/assets/8b5def35-b6c5-4421-8ba0-203ed44d09ff" />
 
 
 ## Step3. You got clustering heatmap idea in step2. Remove normal or low quality cell clusters and make a final heatmap. 
@@ -88,9 +88,9 @@ RemoveNormalClusterReorderHeatmap(PCAKmeanClusterInfoFile, CNVStateData_AfterRmv
 # CompHmapCNV_RmvByGiniMeanLowHighState_LowSt_Chr1only_01_206_143839A_651cells_RordClone.pdf
 
 ```
-<img width="686" height="688" alt="image" src="https://github.com/user-attachments/assets/8f7b205c-edd4-430d-bcb6-a406876c8469" />
+<img width="456" height="458" alt="image" src="https://github.com/user-attachments/assets/ca818eda-2261-4c7c-8313-6a28e4c27638" />
 
-<img width="684" height="686" alt="image" src="https://github.com/user-attachments/assets/ec2010ac-f85d-4a21-b4b7-f2b0791a8aff" />
+<img width="367" height="367" alt="image" src="https://github.com/user-attachments/assets/7611cb10-8a20-46ac-9016-dcf43aad1722" />
 
 
 ## Step4. Extract clone number for each cell. This is to split the merged .bam and run 
