@@ -1,26 +1,27 @@
 ---
 title: "Parallel Evolution Focused on Copy Number Abnormalities of Chromosome 1 Drives the Progression of Multiple Myeloma at The Single-Cell Level"
 output: html_document
-date: "2025-02-28"
+date: "2025-07-17"
 version: beta 0.0.1
 ---
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
 ```
+
 # Parallel Evolution Focused on Copy Number Abnormalities of Chromosome 1 Drives the Progression of Multiple Myeloma at The Single-Cell Level
 
 ![image](https://github.com/user-attachments/assets/577824fc-6b27-45f0-80fd-e613bd0a3e84)
 
 ## A. Introduction
 
-We performed single cell sequencing of genomic DNA derived from 1,216 cells isolated from patients (n=7) with newly diagnosed multiple myeloma (NDMM) associated with copy number gain of chromosome 1q. The data highlights parallel evolution focused on copy number abnormalities of chromosome 1 as a being a key driver mechanism underlying disease evolution and progression to multiple myeloma (MM).
+We performed single cell sequencing of genomic DNA derived from 2,521 cells isolated from patients (n=5) with newly diagnosed multiple myeloma (NDMM) associated with copy number gain of chromosome 1q. The data highlights parallel evolution focused on copy number abnormalities of chromosome 1 as a being a key driver mechanism underlying disease evolution and progression to multiple myeloma (MM).
 
 DLP+7_daVinch is a R package to analyze SCNAs identified through single-cell whole genome sequencing (scWGS) with HMMcopy and generate hierarchical clustering heatmaps, ploidy plots, and phylogenetic tree. 
 
 ## B. Install R package
 
-```{Installation}
+```{r Installation}
 install.packages("devtools")
 library(devtools)
 
@@ -30,70 +31,77 @@ library(HMMCopyClusterPloidyv1.2)
 
 ## Step1. Preprocess HMMCopy CNA state data  
 
-### Read the HMMcopyRead.csv.gz file and process it.
+Read the HMMcopyRead.csv.gz file and process it.
 
-  - Remove outlier bins that have NA values > 20 % of cells 
+  - Remove outlier bins that have NA values > 10 % of cells 
   - Remove artifact cells with Gini coefficient > median(GiniCoefficient)+ mad(GiniCoefficient)
 
 ```{Preprecessing}
 ####### ++++++++++++  Patient #3, 01_206_143839A
 HMMcopyReadFile <- "YourDirectory/01_206_143839A/hmmcopy_reads.csv.gz"  
-MySampleID="01_206_143839A"
+MySampleID="01_206_143839A";  ThresholdLowState=1; ThresholdHighState=10
 
-HMMcopy_AfterRmvCell_WithoutNABinRegion <- CNVStateProcess(HMMcopyReadFile,RemoveArtifactCell=TRUE, BinRegionDelete=TRUE, MySampleID)
-dim(HMMcopy_AfterRmvCell_WithoutNABinRegion) #  656 5228
+HMMcopy_AfterRmvCell_WithoutNABinRegion <- CNVStateProcess(HMMcopyReadFile, RemoveArtifactCell=TRUE, BinRegionDelete=TRUE, MySampleID, ThresholdLowState, ThresholdHighState)
+dim(HMMcopy_AfterRmvCell_WithoutNABinRegion)  #  656 5228
 
 ## This stepp will generate
 ## - "HMMcopy_StateIdeal_RmvCellByGiniMean_WithoutBinRegionAnnot_01_213_143839A.rds"
 ## - "HMMcopy_StateIdeal_RmvArtifactCNV_ByMeanGini_01_235_143921A.rds" 
 ```
 
-## Step2. A draft hierarchical clustering heatmap for all chromosomes. 
-This heatmap still includes artifact cells of clusters, such as cluster #1 in the heatmap below. 
-This step is just to see the hierarchcial clustering with artifict cells.  But, this step is required to make ploidy plot input. 
+## Step2. Run PCA and Kmean.  Make a hierarchical clustering heatmap for all chromosomes.  - This heatmap still includes artifact or low quality cells of clusters.  
+      Give 4 or 5 KmeanClusterSize and see the clusters first. You can choose which cluster to remove and how to order clusters. 
+      This step is just to see the hierarchcial clustering with artifict cells.  But, this step is required to make ploidy plot input. 
 
-```{Hiearchical cluatering}
-HMMcopy_AfterRmvCell_WithoutNABinRegion <- readRDS("HMMcopy_StateIdeal_RmvArtifactCNV_ByMeanGini_01_040_143929A.rds") # This is made from Step1. 
-HierarchialClusteringHeatmap(Processed_HMMcopyStateData=HMMcopy_AfterRmvCell_WithoutNABinRegion, MySampleID="01_206_143839A", AllCell="WithoutArtifact", ChromosomeToSubset="All",ClusterSize=9)
+```{PCA and Kmean cluatering}
+Processed_HMMcopyStateData <- readRDS(paste0(VignetteDir , "HMMcopy_StateIdeal_RmvCellByGiniMeanLowHighState_NoBinRegionAnnot_01_206_143839A.rds"))
+MySampleID="01_206_143839A";  KmeanClusterSize=5
 
-## This stepp will generate
-## "CompHeatmap_CNV_WithoutArtifact_AllChr_01_206_143839A_9Cluster.pdf"
-## "RowSplitHeatmapDraw_WithoutArtifact_AllChr_01_206_143839A.rds"
+PCAKmeanClustering(Processed_HMMcopyStateData,  MySampleID=MySampleID, KmeanClusterSize)
+
+### This will generate three files 
+# "CompHmapCNV_RmvByGiniMeanLowHighState_AllChr_01_040_143929A_242Cells_5clu.pdf"  Overall heatmap with clusters. Still normal or low quality cell of cluster. 
+# "RowSplitHeatmapDraw_WithoutArtifactLowHighState_AllChr_01_040_143929A_5clu.rds" ## It is a list. Names are cluster number and elements are row numbers. 
+# ClusterNumber_10LowCell_01_040_143929A_.txt ## show th cluster number that has < 10 cells and excluded 
+
+
 ```
 ![image](https://github.com/user-attachments/assets/24b0a3c8-21e2-4aa7-9f21-311e6a6f3420)
 
-## Step3. Remove artifact cells by CNA state Low or High, and asign cluster size
-KM_ClusterSize is determined after looking at the heatmap in Step2.   
-Remove cells that have CNA state 0 or 1 in 20% of total bins (n=5259) and have CNA state ≥ 5 in more than 10 bins.
-Remove clusters that have cells less than 10.
+### Step3. You got clustering heatmap idea in step2. Remove normal or low quality cell clusters and make a final heatmap. 
+            This is the final heatmap for all chromosomes and and chromosome1. Stack the clusters by clone order. KM_ClusterSize is determined after looking at the heatmap in Step2.   
 
-```{remove artifact cells}
+```{Remove normal cells and Reorder Cluster}
 ## Patient #3, 01_206_143839A
-CNVStateData_AfterRmvHighGiniMeanFile <- "HMMcopy_StateIdeal_RmvCellByGiniMean_WithoutBinRegionAnnot_01_206_143839A.rds"  # This file is generated in Step1.
-KM_ClusterSize=6
-ThresholdLowState=1; ThresholdHighState=10 # default 10
+HierarchialClusterInfoFile <- paste0(VignetteDir, "RowSplitHeatmapDraw_WithoutArtifactLowHighState_AllChr_01_206_143839A_5clu.rds")
+CNVStateData_AfterRmvHighGiniMeanFile <- paste0(VignetteDir, "HMMcopy_StateIdeal_RmvCellByGiniMeanLowHighState_Kmean_01_206_143839A.rds")
 MySampleID <- "01_206_143839A"
-RemoveArtifactCellHeatmap(CNVStateData_AfterRmvHighGiniMeanFile, MySampleID, KM_ClusterSize, ThresholdLowState, ThresholdHighState)
+ClusterNumbToRmv="group2"
+ClusterReorder <- c("group4","group5","group1","group3")
 
-## This stepp will generate
-## CompHmapCNV_RmvByGiniMeanLowHighState_AllChr_09_025_143855A_LowSt0.18_527Cells_5clu.pdf
-## "RowSplitHeatmapDraw_WithoutArtifactLowHighState_AllChr_",MySampleID,"_",KM_ClusterSize,"clu.rds"
-## "ClusterNumber_15LowCell_01_235_143921A_9_8_6_4.txt" This one tells which clusters of cells < 15 were removed. 
+RemoveNormalClusterReorderHeatmap(HierarchialClusterInfoFile, CNVStateData_AfterRmvHighGiniMeanFile,MySampleID,ClusterNumbToRmv, ClusterReorder)
+
+## It will generate
+# "HMMcopy_StateIdeal_AfterRmvArtifactCell_RmvReorderCluster_01_206_143839A.rds"
+# CompHmapCNV_RmvByGiniMeanLowHighState_LowSt_AllChr_01_206_143839A_651cells_RordClone.pdf
+# CompHmapCNV_RmvByGiniMeanLowHighState_LowSt_Chr1only_01_206_143839A_651cells_RordClone.pdf
+
 ```
 ![image](https://github.com/user-attachments/assets/11bb850c-a1a0-405f-ba1b-ddb86a32b694)
  
 
 
-## Step4. Final hierarchical clustering heatmap for all chromosome
-Check the heatmaps made in Step3 and remove normal cluster cells. 
-Make a heatmap for cell clusters in chromosome 1 only following the same cluster order in the heatmap of all chromosome. 
+### Step4. Extract clone number for each cell. This is to split the merged .bam and run 
 
-```{Make a refined heatmap}
-HierarchialClusterInfoFile <- "RowSplitHeatmapDraw_WithoutArtifactLowHighState_AllChr_01_206_143839A_6clu.rds"
-CNVStateData_AfterRmvHighGiniMeanFile <-"HMMcopy_StateIdeal_RmvCellByGiniMean_01_206_143839A_LowHighState1.rds"
+```{xtract clone number for each cell}
+## 3rd patients, 01_206_143839A
+HierarchialClusterInfoFile <- paste0(VignetteDir, "RowSplitHeatmapDraw_WithoutArtifactLowHighState_AllChr_01_206_143839A_6clu.rds")
+CNVStateData_AfterRmvHighGiniMeanFile <- paste0(VignetteDir, "HMMcopy_StateIdeal_RmvCellByGiniMean_01_206_143839A_LowHighState1.rds")
 MySampleID <- "01_206_143839A"
 ClusterNumbToRmv=6
 ClusterReorder <- c(1,3,5,4,2)
+
+RemoveNormalClusterReorder_CloneNumb(HierarchialClusterInfoFile, CNVStateData_AfterRmvHighGiniMeanFile, MySampleID,ClusterNumbToRmv, ClusterReorder) 
 
 ## This stepp will generate
 ## HMMcopy_StateIdeal_AfterRmvArtifactCell_RmvReorderCluster_MySampleID.rds
@@ -109,12 +117,15 @@ ClusterReorder <- c(1,3,5,4,2)
 ## Step5. Heatmap for chromosome 1 pericentromeric region
 
 ```{ }
-HMMcopy_StateIdeal_RmvArtifactCNV_ByMeanGini_File<- "HMMcopy_StateIdeal_RmvArtifactCNV_ByMeanGini_01_206_143839A.rds"
-HMMcopy_StateIdeal_RmvArtifactCNV_ByMeanGini_StateLowHighReorderFile <-  "HMMcopy_StateIdeal_AfterRmvArtifactCell_RmvReorderCluster_01_206_143839A.rds"
-MySampleID <- "01_206_143839A"
-Chr1Centromere_Heatmap(HMMcopy_StateIdeal_RmvArtifactCNV_ByMeanGini_File, HMMcopy_StateIdeal_RmvArtifactCNV_ByMeanGini_StateLowHighReorderFile, MySampleID)
+## Pt. #3 01_206_143839A
+HierarchialClusterInfoFile <- paste0(VignetteDir, "RowSplitHeatmapDraw_WithoutArtifactLowHighState_AllChr_01_206_143839A_5clu.rds")
+HMMcopy_AfterRmvCell_WithoutNABinRegionFile <- paste0(VignetteDir, "HMMcopy_StateIdeal_AfterRmvArtifactCell_RmvReorderCluster_01_206_143839A.rds")
+HMMcopy_StateIdeal_RmvArtifactCNV_ByMeanGiniStateLowHighFile <- paste0(VignetteDir, "HMMcopy_StateIdeal_RmvCellByGiniMean_01_206_143839A_LowHighState1.rds") # This file is from Step1 output.It has Bin Region
+MySampleID <- "01_206_143839A" 
 
-## This step will generate "CompHeatmap_Chr1CentromereRegion_01_235_143921A_OOOcells.pdf"
+Chr1Centromere_Heatmap(HierarchialClusterInfoFile, HMMcopy_AfterRmvCell_WithoutNABinRegionFile, HMMcopy_StateIdeal_RmvArtifactCNV_ByMeanGiniStateLowHighFile, MySampleID)
+
+## This step will generate "CompHeatmap_Chr1CentromereRegion_01_206_143839A_OOOcells.pdf"
 
 ```
 
@@ -125,19 +136,19 @@ library(regioneR)
 library(karyoploteR)
 library(CopyNumberPlots)
 
-CNVSegmentFile="/YourDirectory/01_206_143839A/hmmcopy_segments.csv.gz";
-HierarchialClusterInfoFile="RowSplitHeatmapDraw_WithoutArtifact_AllChr_01_206_143839A.rds";
-HierarchialClusterInfoAfRmvClusterFile="RowSplitHeatmapDraw_WithoutArtifactLowHighState_AllChr_01_206_143839A_6clu.rds";
-CNVStateData_AfterRmvHighGiniMeanFile="HMMcopy_StateIdeal_AfterRmvArtifactCell_RmvReorderCluster_01_206_143839A.rds";  
+### Patient #3 - 01_206_143839A
+CNVSegmentFile=paste0(DLPpHMMCopyOutDir,"/01_206_143839A/hmmcopy_segments.csv.gz");
+HierarchialClusterInfoAfRmvClusterFile=paste0(VignetteDir, "/RowSplitHeatmapDraw_WithoutArtifactLowHighState_AllChr_01_206_143839A_5clu.rds");
+CNVStateData_AfterRmvHighGiniMeanFile=paste0(VignetteDir, "/HMMcopy_StateIdeal_AfterRmvArtifactCell_RmvReorderCluster_01_206_143839A.rds" );   #"/HMMcopy_StateIdeal_RmvCellByGiniMean_WithoutBinRegionAnnot_01_206_143839A.rds");
 ClusterNumbToRmv=NULL;  ClusterNumbToPick=NULL; MySampleID="01_206_143839A"
 
-Karyoplote_BySegment(CNVSegmentFile=CNVSegmentFile,HierarchialClusterInfoFile=HierarchialClusterInfoFile,
+Karyoplote_BySegment(CNVSegmentFile=CNVSegmentFile,# HierarchialClusterInfoFile=HierarchialClusterInfoFile,
                      HierarchialClusterInfoAfRmvClusterFile=HierarchialClusterInfoAfRmvClusterFile,HierarchialClusterInfoAfRmvClusterChr1File=NULL,
-                     CNVStateData_AfterRmvHighGiniMeanFile=CNVStateData_AfterRmvHighGiniMeanFile,
-                     CNVStateData_AfterRmvHighGiniMeanClusterFile=CNVStateData_AfterRmvHighGiniMeanClusterFile,
+                     CNVStateData_AfterRmvHighGiniMeanFile,
+                     CNVStateData_AfterRmvHighGiniMeanClusterFile=NULL,
                      ClusterNumbToRmv,  ClusterNumbToPick, ClusterNumbToPick_InChr1=ClusterNumbToPick_InChr1,MySampleID=MySampleID )
 
-## This step will generate "OutKaryoplote_AllCell_BeforeRmvHighGiniMean_BySegMedian_ByCluster_01_206_143839A_PloidyLine651c.pdf"
+## This step will generate "OutKaryoplote_AllCell_BeforeRmvHighGiniMean_BySegMedian_ByCluster_01_206_143839A_PloidyLineOOOc.pdf"
 ```
 ![image](https://github.com/user-attachments/assets/91cd7c5e-a5f4-4b63-b834-f376feecce40)
 
