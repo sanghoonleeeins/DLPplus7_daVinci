@@ -66,9 +66,10 @@ PCAKmeanClustering(Processed_HMMcopyStateData,  MySampleID=MySampleID, KmeanClus
 
 
 ```
-![image](https://github.com/user-attachments/assets/24b0a3c8-21e2-4aa7-9f21-311e6a6f3420)
+<img width="696" height="685" alt="image" src="https://github.com/user-attachments/assets/abf74d4d-2526-47e6-88dd-14b102b1d6f4" />
 
-### Step3. You got clustering heatmap idea in step2. Remove normal or low quality cell clusters and make a final heatmap. 
+
+## Step3. You got clustering heatmap idea in step2. Remove normal or low quality cell clusters and make a final heatmap. 
             This is the final heatmap for all chromosomes and and chromosome1. Stack the clusters by clone order. KM_ClusterSize is determined after looking at the heatmap in Step2.   
 
 ```{Remove normal cells and Reorder Cluster}
@@ -87,11 +88,12 @@ RemoveNormalClusterReorderHeatmap(PCAKmeanClusterInfoFile, CNVStateData_AfterRmv
 # CompHmapCNV_RmvByGiniMeanLowHighState_LowSt_Chr1only_01_206_143839A_651cells_RordClone.pdf
 
 ```
-![image](https://github.com/user-attachments/assets/11bb850c-a1a0-405f-ba1b-ddb86a32b694)
- 
+<img width="686" height="688" alt="image" src="https://github.com/user-attachments/assets/8f7b205c-edd4-430d-bcb6-a406876c8469" />
+
+<img width="684" height="686" alt="image" src="https://github.com/user-attachments/assets/ec2010ac-f85d-4a21-b4b7-f2b0791a8aff" />
 
 
-### Step4. Extract clone number for each cell. This is to split the merged .bam and run 
+## Step4. Extract clone number for each cell. This is to split the merged .bam and run 
 
 ```{xtract clone number for each cell}
 ## 3rd patients, 01_206_143839A
@@ -103,16 +105,8 @@ ClusterReorder <- c(1,3,5,4,2)
 
 RemoveNormalClusterReorder_CloneNumb(PCAKmeanClusterInfoFile, CNVStateData_AfterRmvHighGiniMeanFile, MySampleID,ClusterNumbToRmv, ClusterReorder) 
 
-## This stepp will generate
-## HMMcopy_StateIdeal_AfterRmvArtifactCell_RmvReorderCluster_MySampleID.rds
-## CompHmapCNV_RmvByGiniMeanLowHighState_LowSt_AllChr_01_213_143839A_389cells_RordClone.pdf
-## CompHmapCNV_RmvByGiniMeanLowHighState_LowSt_Chr1only_01_213_143839A_389cells_RordClone.pdf
+
 ```
-
-![image](https://github.com/user-attachments/assets/58a54abc-0a12-4286-8daf-29e81d571d89)
-
-![image](https://github.com/user-attachments/assets/a71c086e-d38a-48ee-b328-c0ce6437f9b1)
-
 
 ## Step5. Heatmap for chromosome 1 pericentromeric region
 
