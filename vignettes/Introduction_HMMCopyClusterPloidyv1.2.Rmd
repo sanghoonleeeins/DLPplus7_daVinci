@@ -1,0 +1,483 @@
+---
+title: "Introduction_HMMCopyClusterPloidy"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Introduction_HMMCopyClusterPloidy}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r setup}
+# library(HMMCopyClusterPloidyv1.2)   
+```
+
+### Step1. Read the path/file of HMMcopyRead.csv.gz and process it. - Removing artifacts by High Gini coef and CNV state
+###         Remove artifact cells by CNA state Low or High: Cells have CNA state 0 or 1 in 20% of total bins (n=5259) and Cells have CNA state ≥ 5 in more than 10 bins 
+###         Remove clusters that have cells less than 10.
+```{r preprocessing}
+InputDirectly <- "/Users/lees130/Library/CloudStorage/OneDrive-NYULangoneHealth/N07_DLPplus_scWGS/04a_DLPplus_1qGain_8ptData/"
+
+# ####### ++++++++++++  Patient 1
+# HMMcopyReadFile <- paste0(InputDirectly, "01_040_143929A/hmmcopy_reads.csv.gz")
+# MySampleID="01_040_143929A"; ThresholdLowState=1; ThresholdHighState=50
+# 
+# ####### ++++++++++++  Patient 2
+# HMMcopyReadFile <- paste0(InputDirectly, "01_056_143929A/hmmcopy_reads.csv.gz") 
+# MySampleID="01_056_143929A";  ThresholdLowState=1; ThresholdHighState=50
+
+####### ++++++++++++  Patient 3
+HMMcopyReadFile <- paste0(InputDirectly, "01_206_143839A/hmmcopy_reads.csv.gz")
+MySampleID="01_206_143839A";  ThresholdLowState=1; ThresholdHighState=10
+
+####### ++++++++++++  Patient 4
+HMMcopyReadFile <- paste0(InputDirectly, "01_213_143839A/hmmcopy_reads.csv.gz")
+MySampleID="01_213_143839A"; ThresholdLowState=0.2; ThresholdHighState=10
+
+####### ++++++++++++  Patient 5
+HMMcopyReadFile <- paste0(InputDirectly, "01_235_143921A/hmmcopy_reads.csv.gz") 
+MySampleID="01_235_143921A"; ThresholdLowState=0.18; ThresholdHighState=10
+
+# ####### ++++++++++++  Patient 6
+# HMMcopyReadFile <- paste0(InputDirectly, "01_274_143921A/hmmcopy_reads.csv.gz") 
+# MySampleID="01_274_143921A"
+# 
+# ####### ++++++++++++  Patient 7
+# HMMcopyReadFile <- paste0(InputDirectly, "01_282_143855A/hmmcopy_reads.csv.gz") 
+# MySampleID="01_282_143855A"
+
+####### ++++++++++++  Patient 8
+HMMcopyReadFile <- paste0(InputDirectly, "09_025_143855A/hmmcopy_reads.csv.gz")
+MySampleID="09_025_143855A"; ThresholdLowState=0.18; ThresholdHighState=10;
+### Output: 587 cells
+
+####### ++++++++++++  Patient 9
+HMMcopyReadFile <- paste0(InputDirectly, "BM_CD138_143936A/hmmcopy_reads.csv.gz")
+MySampleID="BM_CD138_143936A"; ThresholdLowState=0.25; ThresholdHighState=10;
+
+### Step1. Process HMMCopy CNA state data  
+###       - Remove outlier bins that have NA values > 20 % of cells 
+###       - Remove artifact cells with Gini coefficient > median(GiniCoefficient)+ mad(GiniCoefficient)
+HMMcopy_AfterRmvCell_WithoutNABinRegion <- CNVStateProcess(HMMcopyReadFile, RemoveArtifactCell=TRUE, BinRegionDelete=TRUE, MySampleID, ThresholdLowState, ThresholdHighState)
+dim(HMMcopy_AfterRmvCell_WithoutNABinRegion) #Pt1.  # Pt2. 881 5392  # Pt3. 656 5228  # Pt4  637 5259 # Pt5 805 5391 # Pt8 09_025_143855A 519 5051 # Pt9 589 5360
+
+
+## CNVStateProcess() generates;
+## "HMMcopy_StateIdeal_RmvCellByGiniMean_01_040_143929A_LowHighState1.rds"  - with bin region annotation. 
+## "HMMcopy_StateIdeal_RmvCellByGiniMeanLowHighState_NoBinRegionAnnot_01_040_143929A.rds"
+## This file has all CNA bin regions. It will be used in Step5 to make a heatmap for Chr1 centromere region heatmap. 
+
+## - "HMMcopy_StateIdeal_RmvCellByGiniMeanLowHighState_WithoutBinRegionAnnot_09_025_143855A.rds" file in the Vignette folder. 
+
+```
+
+### Step2. Run PCA and Kmean.  Make a hierarchical clustering heatmap for all chromosomes.  - This heatmap still includes artifact or low quality cells of clusters.  
+###       Give 4 or 5 KmeanClusterSize and see the clusters first. You can choose which cluster to remove and how to order clusters. 
+### This step is just to see the hierarchcial clustering with artifict cells.  But, this step is required to make ploidy plot input. 
+```{r make a hierarchical clustering}
+
+VignetteDir <- "/Users/lees130/Library/CloudStorage/OneDrive-NYULangoneHealth/N07_DLPplus_scWGS/09d_HMMCopy_PCAKMeanClustering_Rpackage/HMMCopyPCAKMeanPloidy/vignettes/"
+
+# ### +++++++++++++ Patient 1         <+++++++ Heatmap is really dirty
+# Processed_HMMcopyStateData <- readRDS(paste0(VignetteDir , "HMMcopy_StateIdeal_RmvCellByGiniMeanLowHighState_NoBinRegionAnnot_01_040_143929A.rds"))
+# MySampleID="01_040_143929A"; KmeanClusterSize=5
+# 
+# ### +++++++++++++ Patient 2
+# Processed_HMMcopyStateData <- readRDS(paste0(VignetteDir , "HMMcopy_StateIdeal_RmvArtifactCNV_ByMeanGini_01_056_143929A.rds"))
+# MySampleID="01_056_143929A"
+
+### +++++++++++++ Patient 3
+Processed_HMMcopyStateData <- readRDS(paste0(VignetteDir , "HMMcopy_StateIdeal_RmvCellByGiniMeanLowHighState_NoBinRegionAnnot_01_206_143839A.rds"))
+MySampleID="01_206_143839A";  KmeanClusterSize=5
+
+### +++++++++++++ Patient 4
+Processed_HMMcopyStateData <- readRDS(paste0(VignetteDir , "HMMcopy_StateIdeal_RmvCellByGiniMeanLowHighState_NoBinRegionAnnot_01_213_143839A.rds"))
+MySampleID="01_213_143839A"; KmeanClusterSize=8
+# group1 group2 group3 group4 group5 group6 group7 group8 
+#    123     18     17     48    173     11      7     97 
+
+### +++++++++++++ Patient 5
+Processed_HMMcopyStateData <- readRDS(paste0(VignetteDir , "HMMcopy_StateIdeal_RmvCellByGiniMeanLowHighState_NoBinRegionAnnot_01_235_143921A.rds"))
+MySampleID="01_235_143921A"; KmeanClusterSize=6
+
+# ### +++++++++++++ Patient 6
+# Processed_HMMcopyStateData <- readRDS(paste0(VignetteDir , "HMMcopy_StateIdeal_RmvArtifactCNV_ByMeanGini_01_274_143921A.rds"))
+# MySampleID="01_274_143921A"
+# ClusterSize=9
+# 
+# ### +++++++++++++ Patient 7
+# Processed_HMMcopyStateData <- readRDS(paste0(VignetteDir , "HMMcopy_StateIdeal_RmvArtifactCNV_ByMeanGini_01_282_143855A.rds"))
+# MySampleID="01_282_143855A"
+# ClusterSize=9
+
+### +++++++++++++ Patient 8
+Processed_HMMcopyStateData <- readRDS(paste0(VignetteDir , "HMMcopy_StateIdeal_RmvCellByGiniMeanLowHighState_NoBinRegionAnnot_09_025_143855A.rds"))
+MySampleID="09_025_143855A"; KmeanClusterSize=5
+
+### +++++++++++++ Patient 9
+Processed_HMMcopyStateData <- readRDS(paste0(VignetteDir , "HMMcopy_StateIdeal_RmvCellByGiniMeanLowHighState_NoBinRegionAnnot_BM_CD138_143936A.rds"))
+MySampleID="BM_CD138_143936A"; KmeanClusterSize=10
+
+
+
+while (!is.null(dev.list()))  dev.off()
+
+PCAKmeanClustering(Processed_HMMcopyStateData,  MySampleID=MySampleID, KmeanClusterSize)
+
+### This will generate two files 
+# "CompHmapCNV_RmvByGiniMeanLowHighState_AllChr_01_040_143929A_242Cells_5clu.pdf"  Overall heatmap with clusters. Still normal or low quality cell of cluster. 
+# "RowSplitHeatmapDraw_WithoutArtifactLowHighState_AllChr_01_040_143929A_5clu.rds" ## It is a list. Names are cluster number and elements are row numbers. 
+# ClusterNumber_10LowCell_01_040_143929A_.txt ## show th cluster number that has < 10 cells and excluded 
+
+## error 
+#. Error in dev.off() :   Run 'dev.off()' 
+# annot open compressed file '/Users/lees130/Library/CloudStorage/OneDrive-NYULangoneHealth/N07_DLPplus_scWGS/09c_HMMCopyHierarchicalCluster_PloidyPlot_Rpackage/HMMCopyClusterPloidyv1.2/.Rproj.user/shared/notebooks/6586349E-Introduction_HMMCopyClusterPloidy/1/65E26DDE8743a310/cv3u6mjw7iap4_t/35eca20294054de198578c8a571a662a.snapshot', probable reason 'No such file or directory'
+
+## Memory issue error: 
+# Error: C stack usage  7956112 is too close to the limit
+
+```
+
+### Step3. You got hierarchical clustering heatmap idea in step2. Remove normal or low quality cell clusters and make a final heatmap. 
+###         This is the final heatmap for all chromosomes and and chromosome1. Stack the clusters by clone order. 
+```{r Remove normal cells and Reorder Cluster}
+
+# ## 1st patients, 01_040_143929A
+# HierarchialClusterInfoFile <- paste0(VignetteDir, "RowSplitHeatmapDraw_WithoutArtifactLowHighState_AllChr_01_040_143929A_5clu.rds")
+# CNVStateData_AfterRmvHighGiniMeanFile <- paste0(VignetteDir, "HMMcopy_StateIdeal_RmvCellByGiniMean_01_040_143929A_LowHighState1.rds")
+# MySampleID <- "01_040_143929A"
+# ClusterNumbToRmv=NULL
+# ClusterReorder <- c(1,2,4,3,5)
+# 
+# ## 2nd patients, 01_056_143929A
+# HierarchialClusterInfoFile <- paste0(VignetteDir, "RowSplitHeatmapDraw_WithoutArtifactLowHighState_AllChr_01_056_143929A_6clu.rds")
+# CNVStateData_AfterRmvHighGiniMeanFile <- paste0(VignetteDir, "HMMcopy_StateIdeal_RmvCellByGiniMean_01_056_143929A_LowHighState1.rds")
+# MySampleID <- "01_056_143929A"
+# ClusterNumbToRmv=NULL
+# ClusterReorder <- c(1,2,4,3,5,6)
+
+## 3rd patients, 01_206_143839A
+HierarchialClusterInfoFile <- paste0(VignetteDir, "RowSplitHeatmapDraw_WithoutArtifactLowHighState_AllChr_01_206_143839A_5clu.rds")
+CNVStateData_AfterRmvHighGiniMeanFile <- paste0(VignetteDir, "HMMcopy_StateIdeal_RmvCellByGiniMeanLowHighState_Kmean_01_206_143839A.rds")
+MySampleID <- "01_206_143839A"
+ClusterNumbToRmv="group2"
+ClusterReorder <- c("group4","group5","group1","group3")
+
+## 4th patients, 01_213_143839A
+HierarchialClusterInfoFile <- paste0(VignetteDir, "RowSplitHeatmapDraw_WithoutArtifactLowHighState_AllChr_01_213_143839A_7clu.rds")
+CNVStateData_AfterRmvHighGiniMeanFile <- paste0(VignetteDir, "HMMcopy_StateIdeal_RmvCellByGiniMeanLowHighState_Kmean_01_213_143839A.rds")
+MySampleID <- "01_213_143839A"
+ClusterNumbToRmv=c("group2","group3","group4","group7")
+ClusterReorder <- c("group1","group8","group6", "group5")
+
+## 5th patients, 01_235_143921A
+HierarchialClusterInfoFile <- paste0(VignetteDir, "RowSplitHeatmapDraw_WithoutArtifactLowHighState_AllChr_01_235_143921A_6clu.rds")
+CNVStateData_AfterRmvHighGiniMeanFile <- paste0(VignetteDir, "HMMcopy_StateIdeal_RmvCellByGiniMeanLowHighState_Kmean_01_235_143921A.rds")
+MySampleID <- "01_235_143921A"
+ClusterNumbToRmv=c("group3")
+ClusterReorder <- c("group5","group1","group2", "group4","group6")
+
+# ## 6th patients, 01_274_143921A
+# HierarchialClusterInfoFile <- paste0(VignetteDir, "RowSplitHeatmapDraw_WithoutArtifactLowHighState_AllChr_01_274_143921A_6clu.rds")
+# CNVStateData_AfterRmvHighGiniMeanFile <- paste0(VignetteDir, "HMMcopy_StateIdeal_RmvCellByGiniMean_01_274_143921A_LowHighState0.2.rds")
+# MySampleID <- "01_274_143921A"
+# ClusterNumbToRmv=c(1,6,5)
+# ClusterReorder <- c(4,3,2)
+# 
+# ## 7th patients, 01_282_143855A
+# HierarchialClusterInfoFile <- paste0(VignetteDir, "RowSplitHeatmapDraw_WithoutArtifactLowHighState_AllChr_01_282_143855A_7clu.rds")
+# CNVStateData_AfterRmvHighGiniMeanFile <- paste0(VignetteDir, "HMMcopy_StateIdeal_RmvCellByGiniMean_01_282_143855A_LowHighState0.2.rds")
+# MySampleID <- "01_282_143855A"
+# ClusterNumbToRmv=c(1,6) # on Feb.11th, we decidied to remove cluster #6 
+# ClusterReorder <- c(5,4,7,2,3)
+
+## 8th patients, 09_025_143855A
+HierarchialClusterInfoFile <- paste0(VignetteDir, "RowSplitHeatmapDraw_WithoutArtifactLowHighState_AllChr_09_025_143855A_5clu.rds")
+CNVStateData_AfterRmvHighGiniMeanFile <- paste0(VignetteDir, "HMMcopy_StateIdeal_RmvCellByGiniMeanLowHighState_Kmean_09_025_143855A.rds")
+MySampleID <- "09_025_143855A"
+ClusterNumbToRmv=c("group1","group4")
+ClusterReorder <- c("group3","group5","group2")
+
+## 9th patients, BM_CD138_143936A
+HierarchialClusterInfoFile <- paste0(VignetteDir, "RowSplitHeatmapDraw_WithoutArtifactLowHighState_AllChr_BM_CD138_143936A_8clu.rds") ## group7 and group9 have cells < 10
+CNVStateData_AfterRmvHighGiniMeanFile <- paste0(VignetteDir, "HMMcopy_StateIdeal_RmvCellByGiniMeanLowHighState_Kmean_BM_CD138_143936A.rds")
+MySampleID <- "BM_CD138_143936A"
+ClusterNumbToRmv=c("group3","group4","group5") # group7 and group9 are already automatically removed.
+ClusterReorder <- c("group2","group8","group6","group10","group1")
+
+RemoveNormalClusterReorderHeatmap(HierarchialClusterInfoFile, CNVStateData_AfterRmvHighGiniMeanFile,MySampleID,ClusterNumbToRmv, ClusterReorder)
+
+## It will generate
+# "HMMcopy_StateIdeal_AfterRmvArtifactCell_RmvReorderCluster_01_206_143839A.rds"
+# CompHmapCNV_RmvByGiniMeanLowHighState_LowSt_AllChr_01_206_143839A_651cells_RordClone.pdf
+# CompHmapCNV_RmvByGiniMeanLowHighState_LowSt_Chr1only_01_206_143839A_651cells_RordClone.pdf
+
+## ClusterNumber_10LowCell_01_206_143839A_.txt.  Check this file and find the number of cluster which was remove. 
+
+```
+
+### Step4. Extract clone number for each cell. This is to split the merged .bam and run 
+```{r Extract clone number for each cell} 
+## 3rd patients, 01_206_143839A
+HierarchialClusterInfoFile <- paste0(VignetteDir, "RowSplitHeatmapDraw_WithoutArtifactLowHighState_AllChr_01_206_143839A_6clu.rds")
+CNVStateData_AfterRmvHighGiniMeanFile <- paste0(VignetteDir, "HMMcopy_StateIdeal_RmvCellByGiniMean_01_206_143839A_LowHighState1.rds")
+MySampleID <- "01_206_143839A"
+ClusterNumbToRmv=6
+ClusterReorder <- c(1,3,5,4,2)
+
+## 8th patients, 09_025_143855A
+HierarchialClusterInfoFile <- paste0(VignetteDir, "RowSplitHeatmapDraw_WithoutArtifactLowHighState_AllChr_09_025_143855A_5clu.rds")
+CNVStateData_AfterRmvHighGiniMeanFile <- paste0(VignetteDir, "HMMcopy_StateIdeal_RmvCellByGiniMean_01_206_143839A_LowHighState1.rds")
+MySampleID <- "09_025_143855A"
+ClusterNumbToRmv=c("group1","group4")
+ClusterReorder <- c("group3","group5","group2")
+
+
+RemoveNormalClusterReorder_CloneNumb <- function (HierarchialClusterInfoFile="RowSplitHeatmapDraw_WithoutArtifactLowHighState6_AllChr_01_213_143839A.rds",
+                                      CNVStateData_AfterRmvHighGiniMeanFile="HMMcopy_StateIdeal_RmvCellByGiniMean_WithoutBinRegion_01_213_143939A.rds",
+                                       MySampleID,ClusterNumbToRmv=c(1,2), ClusterReorder=c(3,6,4,5)) {
+      # HMMcopy_StateIdeal_NoRmvArtifactCell_ColNameProc <- readRDS(HMMcopyFile_BeforeRmvArtifact) ;
+      # print(paste0("CNV state after removing by high Gini and Mean state: ", dim(HMMcopy_StateIdeal_NoRmvArtifactCell_ColNameProc))) # 881  5259
+
+      if(is.null(CNVStateData_AfterRmvHighGiniMeanFile)) {
+        HMMcopy_StateIdeal_AfterRmvArtifactCell_ColNameProc <- NULL
+      } else {
+        HMMcopy_StateIdeal_AfterRmvArtifactCell_ColNameProc <- readRDS(CNVStateData_AfterRmvHighGiniMeanFile)
+      }
+      dim(HMMcopy_StateIdeal_AfterRmvArtifactCell_ColNameProc) #  704cell 4922bins
+
+      ########## ++++++++++ Remove artifacts by cluster number of cells, and reorder cells by cluster number
+      HMMcopy_StateIdeal_AfterRmvArtifactCell_RmvReorderCluster <-  RemoveReorderCell_ByClusterNumb(HMMcopy_StateIdeal_AfterRmvArtifactCell_ColNameProc,
+                                                                   HierarchialClusterInfoFile, ClusterNumbToRmv, ClusterReorder, ClusterNumbToPick=NULL, MySampleID, ForPloidyPlot=FALSE)
+      dim(HMMcopy_StateIdeal_AfterRmvArtifactCell_RmvReorderCluster) #  651 cells  4922
+      # saveRDS(HMMcopy_StateIdeal_AfterRmvArtifactCell_RmvReorderCluster, file=paste0("HMMcopy_StateIdeal_AfterRmvArtifactCell_RmvReorderCluster_",MySampleID,".rds"))
+
+      ##### Count the number of bins in each chromosome
+      Position_chrStart <- grep("chr", colnames(HMMcopy_StateIdeal_AfterRmvArtifactCell_RmvReorderCluster)); length(Position_chrStart) ; print(Position_chrStart) ## 22
+      # [1]    1  416  877 1262 1629 1969 2298 2597 2834 3050 3300 3555 3808 3992 4163 4315 4457 4603 4747 4854 4969 5027 5089 5364
+      EndChr1Position <- (Position_chrStart[2]-1); print(EndChr1Position) # 326
+      EndChr1PositionPercent <- (Position_chrStart[2]-1)/ncol(HMMcopy_StateIdeal_AfterRmvArtifactCell_RmvReorderCluster); print(EndChr1PositionPercent)
+
+      # EndChrYPosition <- Position_chrStart[24]-1; print(EndChrYPosition) # 5363
+      # EndChrYPositionPercent <- (Position_chrStart[24]-1)/ncol(HMMcopy_StateIdeal_AfterRmvArtifactCell_RmvReorderCluster); print(EndChrYPositionPercent)
+
+      ##### Count the number of cells in each cluster.
+      NumberCell_EachCluster <- CountCell_EachCluster(HierarchialClusterInfoFile, ClusterReorder) # [1] 118  31 135  92  11
+      Numb_Cell <- sum(NumberCell_EachCluster)
+
+      ## Split cells in hierarchical clustering
+      if(length(ClusterReorder)>=10) {
+            MySplit<-c(paste('clone0', c( rep(1:9, times=NumberCell_EachCluster[1:9])), sep="" ),
+                       paste('clone',c(rep(10:length(ClusterReorder), times=NumberCell_EachCluster[10:length(ClusterReorder)] )), sep="" ) )
+      } else {
+            MySplit<-paste('clone', c( rep(1:length(ClusterReorder), times=NumberCell_EachCluster)) )
+      }
+
+      print(MySplit[1:10]) # [1] "clone 1" "clone 1" "clone 1" "clone 1" "clone 1" "clone 1" "clone 1" "clone 1" "clone 1" "clone 1"
+      table(MySplit); sum(table(MySplit)) # 651 
+      # clone 1 clone 2 clone 3 clone 4 clone 5 
+      # 19     133      59     415      25 
+
+      ### Map between CellID and CloneID
+      CellID_CloneID_DF <- data.frame(CellID=rownames(HMMcopy_StateIdeal_AfterRmvArtifactCell_RmvReorderCluster), CloneNumb=MySplit); dim(CellID_CloneID_DF)
+      CellID_CloneID_DF <- CellID_CloneID_DF %>% dplyr::mutate(CellID=gsub("^X","", CellID)) %>% dplyr::mutate(CellID=gsub("_","-", CellID)) %>% dplyr::mutate(CloneNumb=gsub(" ","", CloneNumb))
+      
+      fwrite(CellID_CloneID_DF, file=paste0(VignetteDir, "CellID_CloneID_", MySampleID, "_ForSplitBam.txt"), col.names=TRUE, row.names=FALSE, sep="\t",quote=FALSE)
+}
+
+
+## Pt8. 09_205
+HierarchialClusterInfoFile <- paste0(VignetteDir, "RowSplitHeatmapDraw_WithoutArtifactLowHighState_AllChr_09_025_143855A_5clu.rds")
+CNVStateData_AfterRmvHighGiniMeanFile <- paste0(VignetteDir, "HMMcopy_StateIdeal_RmvCellByGiniMean_09_025_143855A_LowHighState0.2.rds")
+MySampleID <- "09_025_143855A"
+ClusterNumbToRmv=c("group1","group4")
+ClusterReorder <- c("group3","group5","group2")
+
+RemoveNormalClusterReorder_CloneNumb(HierarchialClusterInfoFile, CNVStateData_AfterRmvHighGiniMeanFile, MySampleID,ClusterNumbToRmv, ClusterReorder) 
+
+
+
+
+```
+
+
+### Step5. Heatmap for chromosome 1 pericentromeric region
+```{r chr1 centromere region heatmap} 
+# ## Pt. #1
+# HMMcopy_StateIdeal_RmvArtifactCNV_ByMeanGini_File<-paste0(VignetteDir, "HMMcopy_StateIdeal_RmvArtifactCNV_ByMeanGini_01_040_143929A.rds")
+# HMMcopy_StateIdeal_RmvArtifactCNV_ByMeanGini_StateLowHighReorderFile <- paste0(VignetteDir, "HMMcopy_StateIdeal_AfterRmvArtifactCell_RmvReorderCluster_01_040_143929A.rds")
+# MySampleID <- "01_040_143929A"
+# Chr1Centromere_Heatmap(HMMcopy_StateIdeal_RmvArtifactCNV_ByMeanGini_File, HMMcopy_StateIdeal_RmvArtifactCNV_ByMeanGini_StateLowHighReorderFile, MySampleID)
+# 
+# ## Pt. #2
+# HMMcopy_StateIdeal_RmvArtifactCNV_ByMeanGini_File<-paste0(VignetteDir, "HMMcopy_StateIdeal_RmvArtifactCNV_ByMeanGini_01_056_143929A.rds")
+# HMMcopy_StateIdeal_RmvArtifactCNV_ByMeanGini_StateLowHighReorderFile <- paste0(VignetteDir, "HMMcopy_StateIdeal_AfterRmvArtifactCell_RmvReorderCluster_01_056_143929A.rds")
+# MySampleID <- "01_056_143929A"
+# Chr1Centromere_Heatmap(HMMcopy_StateIdeal_RmvArtifactCNV_ByMeanGini_File, HMMcopy_StateIdeal_RmvArtifactCNV_ByMeanGini_StateLowHighReorderFile, MySampleID)
+
+## Pt. #3
+HierarchialClusterInfoFile <- paste0(VignetteDir, "RowSplitHeatmapDraw_WithoutArtifactLowHighState_AllChr_01_206_143839A_5clu.rds")
+HMMcopy_AfterRmvCell_WithoutNABinRegionFile <- paste0(VignetteDir, "HMMcopy_StateIdeal_AfterRmvArtifactCell_RmvReorderCluster_01_206_143839A.rds")
+HMMcopy_StateIdeal_RmvArtifactCNV_ByMeanGiniStateLowHighFile <- paste0(VignetteDir, "HMMcopy_StateIdeal_RmvCellByGiniMean_01_206_143839A_LowHighState1.rds") # This file is from Step1 output.It has Bin Region
+MySampleID <- "01_206_143839A" 
+
+## Pt. #4
+HMMcopy_StateIdeal_RmvArtifactCNV_ByMeanGini_File<-paste0(VignetteDir, "RowSplitHeatmapDraw_WithoutArtifactLowHighState_AllChr_01_213_143839A_7clu.rds")
+HMMcopy_AfterRmvCell_WithoutNABinRegionFile <- paste0(VignetteDir, "HMMcopy_StateIdeal_AfterRmvArtifactCell_RmvReorderCluster_01_213_143839A.rds")
+HMMcopy_StateIdeal_RmvArtifactCNV_ByMeanGiniStateLowHighFile <- paste0(VignetteDir, "HMMcopy_StateIdeal_RmvCellByGiniMean_01_213_143839A_LowHighState0.2.rds") # This file is from Step1 output.It has Bin Region
+MySampleID <- "01_213_143839A"
+Chr1Centromere_Heatmap(HierarchialClusterInfoFile, HMMcopy_AfterRmvCell_WithoutNABinRegionFile, HMMcopy_StateIdeal_RmvArtifactCNV_ByMeanGiniStateLowHighFile, MySampleID)
+
+## Pt. #5
+HMMcopy_StateIdeal_RmvArtifactCNV_ByMeanGini_File<-paste0(VignetteDir, "RowSplitHeatmapDraw_WithoutArtifactLowHighState_AllChr_01_235_143921A_6clu.rds")
+HMMcopy_AfterRmvCell_WithoutNABinRegionFile <- paste0(VignetteDir, "HMMcopy_StateIdeal_AfterRmvArtifactCell_RmvReorderCluster_01_235_143921A.rds")
+HMMcopy_StateIdeal_RmvArtifactCNV_ByMeanGiniStateLowHighFile <- paste0(VignetteDir, "HMMcopy_StateIdeal_RmvCellByGiniMean_01_235_143921A_LowHighState0.18.rds") # This file is from Step1 output.It has Bin Region
+MySampleID <- "01_235_143921A"
+Chr1Centromere_Heatmap(HierarchialClusterInfoFile, HMMcopy_AfterRmvCell_WithoutNABinRegionFile, HMMcopy_StateIdeal_RmvArtifactCNV_ByMeanGiniStateLowHighFile, MySampleID)
+
+# ## Pt. #6
+# HMMcopy_StateIdeal_RmvArtifactCNV_ByMeanGini_File<-paste0(VignetteDir, "HMMcopy_StateIdeal_RmvArtifactCNV_ByMeanGini_01_274_143921A.rds")
+# HMMcopy_StateIdeal_RmvArtifactCNV_ByMeanGini_StateLowHighReorderFile <- paste0(VignetteDir, "HMMcopy_StateIdeal_AfterRmvArtifactCell_RmvReorderCluster_01_274_143921A.rds")
+# MySampleID <- "01_274_143921A"
+# Chr1Centromere_Heatmap(HMMcopy_StateIdeal_RmvArtifactCNV_ByMeanGini_File, HMMcopy_StateIdeal_RmvArtifactCNV_ByMeanGini_StateLowHighReorderFile, MySampleID)
+# 
+# ## Pt. #7 patient, 01_282_143855A
+# HMMcopy_StateIdeal_RmvArtifactCNV_ByMeanGini_File<-paste0(VignetteDir, "HMMcopy_StateIdeal_RmvArtifactCNV_ByMeanGini_01_282_143855A.rds")
+# HMMcopy_StateIdeal_RmvArtifactCNV_ByMeanGini_StateLowHighReorderFile <- paste0(VignetteDir, "HMMcopy_StateIdeal_AfterRmvArtifactCell_RmvReorderCluster_01_282_143855A.rds")
+# MySampleID <- "01_282_143855A"
+# Chr1Centromere_Heatmap(HMMcopy_StateIdeal_RmvArtifactCNV_ByMeanGini_File, HMMcopy_StateIdeal_RmvArtifactCNV_ByMeanGini_StateLowHighReorderFile, MySampleID)
+
+## 8th patient, 09_025_143855A
+HMMcopy_StateIdeal_RmvArtifactCNV_ByMeanGini_File<-paste0(VignetteDir, "RowSplitHeatmapDraw_WithoutArtifactLowHighState_AllChr_09_025_143855A_5clu.rds")
+HMMcopy_AfterRmvCell_WithoutNABinRegionFile <- paste0(VignetteDir, "HMMcopy_StateIdeal_AfterRmvArtifactCell_RmvReorderCluster_09_025_143855A.rds")
+HMMcopy_StateIdeal_RmvArtifactCNV_ByMeanGiniStateLowHighFile <- paste0(VignetteDir, "HMMcopy_StateIdeal_RmvCellByGiniMean_09_025_143855A_LowHighState0.2.rds") 
+MySampleID <- "09_025_143855A" 
+Chr1Centromere_Heatmap(HierarchialClusterInfoFile, HMMcopy_AfterRmvCell_WithoutNABinRegionFile, HMMcopy_StateIdeal_RmvArtifactCNV_ByMeanGiniStateLowHighFile, MySampleID)
+
+
+## 9th patient, BM_CD138_143936A
+HMMcopy_StateIdeal_RmvArtifactCNV_ByMeanGini_File<-paste0(VignetteDir, "RowSplitHeatmapDraw_WithoutArtifactLowHighState_AllChr_BM_CD138_143936A_8clu.rds")
+HMMcopy_AfterRmvCell_WithoutNABinRegionFile <- paste0(VignetteDir, "HMMcopy_StateIdeal_AfterRmvArtifactCell_RmvReorderCluster_BM_CD138_143936A.rds")
+HMMcopy_StateIdeal_RmvArtifactCNV_ByMeanGiniStateLowHighFile <- paste0(VignetteDir, "HMMcopy_StateIdeal_RmvCellByGiniMean_BM_CD138_143936A_LowHighState0.25.rds")  
+MySampleID <- "BM_CD138_143936A"
+Chr1Centromere_Heatmap(HierarchialClusterInfoFile, HMMcopy_AfterRmvCell_WithoutNABinRegionFile, HMMcopy_StateIdeal_RmvArtifactCNV_ByMeanGiniStateLowHighFile, MySampleID)
+
+### Output file name: CompHeatmap_Chr1CentromereRegion_01_235_143921A_OOOcells.pdf
+
+```
+
+### Step6. Ploidy plot for all chromosomes. 
+```{r chr1 Ploidy plot} 
+library(regioneR)
+library(karyoploteR)
+library(CopyNumberPlots)
+
+
+DLPpHMMCopyOutDir <- "/Users/lees130/Library/CloudStorage/OneDrive-NYULangoneHealth/N07_DLPplus_scWGS/04a_DLPplus_1qGain_8ptData"
+VignetteDir <- "/Users/lees130/Library/CloudStorage/OneDrive-NYULangoneHealth/N07_DLPplus_scWGS/09d_HMMCopy_PCAKMeanClustering_Rpackage/HMMCopyPCAKMeanPloidy/vignettes"
+
+# ### Patient #1 - 01_040_143929A
+# CNVSegmentFile=paste0(DLPpHMMCopyOutDir,"/01_040_143929A/hmmcopy_segments.csv.gz");
+# HierarchialClusterInfoFile=paste0(VignetteDir, "RowSplitHeatmapDraw_WithoutArtifact_AllChr_01_040_143929A.rds");
+# HierarchialClusterInfoAfRmvClusterFile=paste0(VignetteDir, "RowSplitHeatmapDraw_WithoutArtifactLowHighState_AllChr_01_040_143929A_5clu.rds");
+# # HierarchialClusterInfoAfRmvClusterChr1File=paste0(VignetteDir, "RowSplitHeatmapDraw_WithoutArtifact_OnlyChr1_ByClusterSize6_01_040_143929A.rds");
+# CNVStateData_AfterRmvHighGiniMeanFile=paste0(VignetteDir, "HMMcopy_StateIdeal_AfterRmvArtifactCell_RmvReorderCluster_01_040_143929A.rds" );   #"/HMMcopy_StateIdeal_RmvCellByGiniMean_WithoutBinRegionAnnot_01_040_143929A.rds");
+# ClusterNumbToRmv=NULL;  ClusterNumbToPick=NULL; MySampleID="01_040_143929A"
+# 
+# ### Patient #2 - 01_056_143929A
+# CNVSegmentFile=paste0(DLPpHMMCopyOutDir,"/01_056_143929A/hmmcopy_segments.csv.gz");
+# HierarchialClusterInfoFile=paste0(VignetteDir, "RowSplitHeatmapDraw_WithoutArtifact_AllChr_01_056_143929A.rds");
+# HierarchialClusterInfoAfRmvClusterFile=paste0(VignetteDir, "RowSplitHeatmapDraw_WithoutArtifactLowHighState_AllChr_01_056_143929A_6clu.rds");
+# # HierarchialClusterInfoAfRmvClusterChr1File=paste0(VignetteDir, "RowSplitHeatmapDraw_WithoutArtifact_OnlyChr1_ByClusterSize6_01_056_143929A.rds");
+# CNVStateData_AfterRmvHighGiniMeanFile=paste0(VignetteDir, "HMMcopy_StateIdeal_AfterRmvArtifactCell_RmvReorderCluster_01_056_143929A.rds" );   #"/HMMcopy_StateIdeal_RmvCellByGiniMean_WithoutBinRegionAnnot_01_056_143929A.rds");
+# ClusterNumbToRmv=NULL;  ClusterNumbToPick=NULL; MySampleID="01_056_143929A"
+
+### Patient #3 - 01_206_143839A
+CNVSegmentFile=paste0(DLPpHMMCopyOutDir,"/01_206_143839A/hmmcopy_segments.csv.gz");
+HierarchialClusterInfoAfRmvClusterFile=paste0(VignetteDir, "/RowSplitHeatmapDraw_WithoutArtifactLowHighState_AllChr_01_206_143839A_5clu.rds");
+CNVStateData_AfterRmvHighGiniMeanFile=paste0(VignetteDir, "/HMMcopy_StateIdeal_AfterRmvArtifactCell_RmvReorderCluster_01_206_143839A.rds" );   #"/HMMcopy_StateIdeal_RmvCellByGiniMean_WithoutBinRegionAnnot_01_206_143839A.rds");
+ClusterNumbToRmv=NULL;  ClusterNumbToPick=NULL; MySampleID="01_206_143839A"
+
+### Patient #4 - 01_213_143839A
+CNVSegmentFile=paste0(DLPpHMMCopyOutDir,"/01_213_143839A/hmmcopy_segments.csv.gz");
+HierarchialClusterInfoAfRmvClusterFile=paste0(VignetteDir, "/RowSplitHeatmapDraw_WithoutArtifactLowHighState_AllChr_01_213_143839A_7clu.rds");
+CNVStateData_AfterRmvHighGiniMeanFile=paste0(VignetteDir, "/HMMcopy_StateIdeal_AfterRmvArtifactCell_RmvReorderCluster_01_213_143839A.rds" );   #"/HMMcopy_StateIdeal_RmvCellByGiniMean_WithoutBinRegionAnnot_01_206_143839A.rds");
+ClusterNumbToRmv=NULL;  ClusterNumbToPick=NULL; MySampleID="01_213_143839A"
+
+### Patient #5 - 01_235_143921A
+CNVSegmentFile=paste0(DLPpHMMCopyOutDir,"/01_235_143921A/hmmcopy_segments.csv.gz");
+HierarchialClusterInfoAfRmvClusterFile=paste0(VignetteDir, "/RowSplitHeatmapDraw_WithoutArtifactLowHighState_AllChr_01_235_143921A_6clu.rds");
+CNVStateData_AfterRmvHighGiniMeanFile=paste0(VignetteDir, "/HMMcopy_StateIdeal_AfterRmvArtifactCell_RmvReorderCluster_01_235_143921A.rds" );   #"/HMMcopy_StateIdeal_RmvCellByGiniMean_WithoutBinRegionAnnot_01_206_143839A.rds");
+ClusterNumbToRmv=NULL;  ClusterNumbToPick=NULL; MySampleID="01_235_143921A"
+
+# ### Patient #6 - 01_274_143921A
+# CNVSegmentFile=paste0(DLPpHMMCopyOutDir,"/01_274_143921A/hmmcopy_segments.csv.gz");
+# HierarchialClusterInfoFile=paste0(VignetteDir, "/RowSplitHeatmapDraw_WithoutArtifact_AllChr_01_274_143921A.rds");
+# HierarchialClusterInfoAfRmvClusterFile=paste0(VignetteDir, "/RowSplitHeatmapDraw_WithoutArtifactLowHighState_AllChr_01_274_143921A_6clu.rds");
+# # HierarchialClusterInfoAfRmvClusterChr1File=paste0(VignetteDir, "/RowSplitHeatmapDraw_WithoutArtifact_OnlyChr1_ByClusterSize6_01_274_143921A.rds");
+# CNVStateData_AfterRmvHighGiniMeanFile=paste0(VignetteDir, "/HMMcopy_StateIdeal_AfterRmvArtifactCell_RmvReorderCluster_01_274_143921A.rds" );   #"/HMMcopy_StateIdeal_RmvCellByGiniMean_WithoutBinRegionAnnot_01_274_143921A.rds");
+# ClusterNumbToRmv=NULL;  ClusterNumbToPick=NULL; MySampleID="01_274_143921A"
+# 
+# ### Patient #7 - 01_282_143855A
+# CNVSegmentFile=paste0(DLPpHMMCopyOutDir,"/01_282_143855A/hmmcopy_segments.csv.gz");
+# HierarchialClusterInfoFile=paste0(VignetteDir, "/RowSplitHeatmapDraw_WithoutArtifact_AllChr_01_282_143855A.rds");
+# HierarchialClusterInfoAfRmvClusterFile=paste0(VignetteDir, "/RowSplitHeatmapDraw_WithoutArtifactLowHighState_AllChr_01_282_143855A_7clu.rds");
+# # HierarchialClusterInfoAfRmvClusterChr1File=paste0(VignetteDir, "/RowSplitHeatmapDraw_WithoutArtifact_OnlyChr1_ByClusterSize6_01_274_143921A.rds");
+# CNVStateData_AfterRmvHighGiniMeanFile=paste0(VignetteDir, "/HMMcopy_StateIdeal_AfterRmvArtifactCell_RmvReorderCluster_01_282_143855A.rds" );   
+# ClusterNumbToRmv=NULL;  ClusterNumbToPick=NULL; MySampleID="01_282_143855A"
+
+### Patient #8 - 09_025_143855A
+CNVSegmentFile=paste0(DLPpHMMCopyOutDir,"/09_025_143855A/hmmcopy_segments.csv.gz");
+# HierarchialClusterInfoFile=paste0(VignetteDir, "/RowSplitHeatmapDraw_WithoutArtifact_AllChr_09_025_143855A.rds");
+HierarchialClusterInfoAfRmvClusterFile=paste0(VignetteDir, "/RowSplitHeatmapDraw_WithoutArtifactLowHighState_AllChr_09_025_143855A_5clu.rds");
+# HierarchialClusterInfoAfRmvClusterChr1File=paste0(VignetteDir, "/RowSplitHeatmapDraw_WithoutArtifact_OnlyChr1_ByClusterSize6_01_274_143921A.rds");
+CNVStateData_AfterRmvHighGiniMeanFile=paste0(VignetteDir, "/HMMcopy_StateIdeal_AfterRmvArtifactCell_RmvReorderCluster_09_025_143855A.rds" );   
+ClusterNumbToRmv=NULL;  ClusterNumbToPick=NULL; MySampleID="09_025_143855A"
+
+
+### Patient #9 - BM_CD138_143936A
+CNVSegmentFile=paste0(DLPpHMMCopyOutDir,"/BM_CD138_143936A/hmmcopy_segments.csv.gz");
+HierarchialClusterInfoAfRmvClusterFile=paste0(VignetteDir, "/RowSplitHeatmapDraw_WithoutArtifactLowHighState_AllChr_BM_CD138_143936A_8clu.rds");
+CNVStateData_AfterRmvHighGiniMeanFile=paste0(VignetteDir, "/HMMcopy_StateIdeal_AfterRmvArtifactCell_RmvReorderCluster_BM_CD138_143936A.rds" );   
+ClusterNumbToRmv=NULL;  ClusterNumbToPick=NULL; MySampleID="BM_CD138_143936A"
+
+
+
+library(regioneR)
+library(karyoploteR)
+library(CopyNumberPlots)
+data.panel <-1
+
+Karyoplote_BySegment(CNVSegmentFile=CNVSegmentFile,# HierarchialClusterInfoFile=HierarchialClusterInfoFile,
+                     HierarchialClusterInfoAfRmvClusterFile=HierarchialClusterInfoAfRmvClusterFile,HierarchialClusterInfoAfRmvClusterChr1File=NULL,
+                     CNVStateData_AfterRmvHighGiniMeanFile,
+                     CNVStateData_AfterRmvHighGiniMeanClusterFile=NULL,
+                     ClusterNumbToRmv,  ClusterNumbToPick, ClusterNumbToPick_InChr1=ClusterNumbToPick_InChr1,MySampleID=MySampleID )
+
+
+
+
+
+
+```
+
+
+### Step7. Subclone phylogenetic tree
+```{r phylogenetic tree}
+## Pt3, 01_206  clone evolution
+TreeData <- data.frame("sample" = c("01_206","01_206","01_206","01_206","01_206"), #name of sample, useful to read in all samples at once if processing multiple
+                           "from" = c("x",   "Clone1", "x",      "Clone3","Clone4"), #parental Clones. 'x' is a virtual normal. 
+                           "to"= c("Clone1", "Clone2", "Clone3", "Clone4","Clone5"))  #child Clone
+                           #"score" = c() #a metric of CNV burden 
+# Pt3 01_206 cell numbers 
+NumbCellData <- data.frame("sample" = c("01_206","01_206", "01_206", "01_206","01_206","01_206"), #name of sample, useful to read in all samples at once if processing multiple
+                                  "name" = c("x", "Clone1", "Clone2", "Clone3", "Clone4", "Clone5"), #Clone
+                                  "counts"= c(0,19, 133,59,415, 25)) #number of cells in Clone
+MySampleID <- "01_206";
+
+
+## Make Phylogenetic tree
+PhylogeneticTree(df=TreeData, num_cells_in=NumbCellData, MySampleID=MySampleID) 
+
+## This will output "01_206_PhylogeneticTree.pdf" file. 
+
+```
