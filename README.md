@@ -144,7 +144,7 @@ Karyoplote_BySegment(CNVSegmentFile=CNVSegmentFile,
 
 ## This step will generate "OutKaryoplote_AllCell_BeforeRmvHighGiniMean_BySegMedian_ByCluster_01_206_143839A_PloidyLineOOOc.pdf"
 ```
-<img width="535" height="257" alt="image" src="https://github.com/user-attachments/assets/6a6aebac-4693-4cf2-a12a-f077afce5db8" />
+<img width="809" height="378" alt="image" src="https://github.com/user-attachments/assets/3629a474-6076-412e-8b40-570083394f12" />
 
 
 ## Step7. Subclone phylogenetic tree
