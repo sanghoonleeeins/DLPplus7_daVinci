@@ -25,7 +25,7 @@ DLP+7_daVinch is a R package to analyze SCNAs identified through single-cell who
 install.packages("devtools")
 library(devtools)
 
-devtools::install_github("sanghoonleepitt/iGenSigRx")
+devtools::install_github("sanghoonleepitt/HMMCopyClusterPloidyv1.2")
 library(HMMCopyClusterPloidyv1.2)
 ```
 
